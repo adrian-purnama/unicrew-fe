@@ -208,6 +208,7 @@ export default function JobSplitView() {
                                     <img
                                         src={selectedJob?.company?.profilePicture}
                                         alt="Company Logo"
+                                        className="w-10"
                                     />
                                     <div>
                                         <h1 className="text-4xl font-bold">{selectedJob.title}</h1>
