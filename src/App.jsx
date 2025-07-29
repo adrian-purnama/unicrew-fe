@@ -7,7 +7,7 @@ import AdminRegister from "./pages/auth/AdminRegister";
 import UserLogin from "./pages/auth/UserLogin";
 import UserRegister from "./pages/auth/UserRegister";
 import CompanyLogin from "./pages/auth/CompanyLogin";
-import CompanyRegister from "./pages/auth/COmpanyRegister";
+import CompanyRegister from "./pages/auth/CompanyRegister";
 import VerifyPage from "./pages/auth/VerifyPage";
 import axiosInstance from "../utils/ApiHelper";
 import { UserContext } from "../utils/UserContext";
