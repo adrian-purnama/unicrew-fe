@@ -117,7 +117,7 @@ export default function JobSplitView() {
                                     className={`rounded-md p-4 transition-all duration-200${
                                         selectedJob?._id === job._id
                                             ? "ring-theme-primary bg-primary-20 ring-1 ring-theme-primary"
-                                            : " border-1 border-gray bg-color-2"
+                                            : " border-1 border-gray bg-color-1"
                                     }`}
                                 >
                                     <div
@@ -202,7 +202,7 @@ export default function JobSplitView() {
                     </div>
 
                     {!isMobile && selectedJob && (
-                        <div className="bg-color-2 p-6 border-gray border-1 rounded-md">
+                        <div className="bg-color-1 p-6 border-gray border-1 rounded-md">
                             <div className="p-6 overflow-y-auto max-h-[80vh] relative sleek-scrollbar">
                                 <div className="mb-4">
                                     <div className="flex items-start gap-2">

@@ -61,7 +61,7 @@ export default function Navigation() {
   const links = roleLinks[role] || [];
 
   return (
-    <nav className="nav-container flex items-center justify-between px-6 py-3 border-gray border-b-1 bg-color-2">
+    <nav className="nav-container flex items-center justify-between px-6 py-3 border-gray border-b-1 bg-color-1">
       <div className="flex items-center justify-between w-full">
         {/* Left */}
         <div className="flex items-center space-x-4">
