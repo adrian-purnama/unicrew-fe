@@ -1,5 +1,5 @@
 import React from "react";
-import ResetPasswordForm from "../../component/ResetPasswordFOrm";
+import ResetPasswordForm from "../../component/ResetPasswordForm";
 import Navigation from "../../component/Navigation";
 
 
