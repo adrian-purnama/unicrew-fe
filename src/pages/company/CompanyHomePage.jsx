@@ -33,14 +33,14 @@ export default function CompanyHomePage() {
   };
 
   return (
-    <>
+    <div className="bg-color-1">
       <Navigation />
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 max-w-4xl mx-auto bg-color-1">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Your Job Postings</h1>
+          <h1 className="text-2xl font-bold text-color">Your Job Postings</h1>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="btn-primary px-4 py-2 rounded "
+            className="btn-primary px-4 py-2 rounded text-white font-bold"
           >
             + Post Job
           </button>
@@ -70,6 +70,6 @@ export default function CompanyHomePage() {
       >
         <JobPostForm onSuccess={handlePostSuccess} />
       </BaseModal>
-    </>
+    </div>
   );
 }

@@ -12,9 +12,9 @@ const HomePage = () => {
         <>
             <Navigation />
 
-            <main className="min-h-screen bg-gradient-to-br from-background to-gray-100 dark:to-gray-800 transition-colors duration-300 text-text">
+            <main className="min-h-screen">
                 {/* Hero Section */}
-                <section className="w-full px-6 pb-10 pt-5 flex flex-col items-center text-center space-y-10">
+                <section className="w-full px-6 pb-10 pt-5 flex flex-col items-center text-center space-y-10 bg-color-1">
                     <div className="max-w-3xl">
                         <img
                             src="https://raw.githubusercontent.com/adrian-purnama/photo-host/refs/heads/main/unicru%20photo/university-hero.png"
@@ -41,13 +41,13 @@ const HomePage = () => {
                             delay={150}
                             animateBy="words"
                             direction="top"
-                            className="text-5xl tetxt-center font-bold justify-center"
+                            className="text-5xl tetxt-center font-bold justify-center text-color"
                         />
                         {/* <h1 className="text-4xl sm:text-5xl font-bold leading-tight">
                             Where Students and Companies Connect
                         </h1> */}
                     </div>
-                    <p className="max-w-xl text-lg text-gray-600 dark:text-gray-300">
+                    <p className="max-w-xl text-gray text-sm">
                         Find internships, entry-level jobs, and company culture insights — powered
                         by student experiences and employer reviews.
                     </p>
@@ -63,12 +63,12 @@ const HomePage = () => {
                 </section>
 
                 {/* About Us + Reach Section Combined */}
-                <section className="bg-white dark:bg-gray-900 py-16 px-6">
+                <section className="bg-color-1 py-16 px-6">
                     <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-12">
                         {/* Left: About Text */}
                         <div className="md:w-1/2 text-center md:text-left">
-                            <h2 className="text-3xl font-bold mb-4">About Us</h2>
-                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            <h2 className="text-3xl font-bold mb-4 text-color">About Us</h2>
+                            <p className="text-gray leading-relaxed">
                                 Unicru is a platform dedicated to bridging the gap between graduates
                                 and companies across Indonesia. We believe in equal opportunity,
                                 transparency, and building meaningful careers from the first step.
@@ -77,9 +77,9 @@ const HomePage = () => {
 
                         {/* Right: Statistics */}
                         <div className="md:w-1/2 text-center flex flex-col items-center md:items-end space-y-6">
-                            <h2 className="text-3xl font-bold mb-4">Community</h2>
+                            <h2 className="text-3xl font-bold mb-4 text-color">Community</h2>
 
-                            <p className="text-gray-600 dark:text-gray-300">
+                            <p className="text-gray">
                                 Join our growing network of over{" "}
                                 <strong>20,000 active users</strong> and{" "}
                                 <strong>2,000 recruiters</strong>.
@@ -94,7 +94,7 @@ const HomePage = () => {
                                         duration={1.5}
                                         className="text-6xl font-bold text-primary"
                                     />
-                                    <p className="text-lg text-gray-600 dark:text-gray-300 mt-1">
+                                    <p className="text-sm font-bold text-gray mt-1">
                                         Students
                                     </p>
                                 </div>
@@ -107,7 +107,7 @@ const HomePage = () => {
                                         duration={1.5}
                                         className="text-6xl font-bold text-primary"
                                     />
-                                    <p className="text-lg text-gray-600 dark:text-gray-300 mt-1">
+                                    <p className="text-sm font-bold text-gray mt-1">
                                         Companies
                                     </p>
                                 </div>
@@ -117,8 +117,8 @@ const HomePage = () => {
                 </section>
 
                 {/* Steps to Register as Flow */}
-                <section className="bg-gray-100 dark:bg-gray-800 py-16 px-6">
-                    <h2 className="text-3xl font-bold mb-10 text-center">How to Get Started</h2>
+                <section className="bg-color-2 py-16 px-6">
+                    <h2 className="text-3xl font-bold mb-10 text-center text-color">How to Get Started</h2>
 
                     <div className="max-w-4xl mx-auto space-y-8 sm:space-y-0 sm:grid sm:grid-cols-4 sm:gap-6">
                         {[
@@ -144,8 +144,8 @@ const HomePage = () => {
                 </section>
 
                 {/* FAQ / Support */}
-                <section className="bg-white dark:bg-gray-900 py-16 px-6 text-center">
-                    <h2 className="text-3xl font-bold mb-4">Support & Guidance</h2>
+                <section className="bg-color-1 py-16 px-6 text-center">
+                    <h2 className="text-3xl font-bold mb-4 text-color">Support & Guidance</h2>
                     <div className="max-w-2xl mx-auto text-left space-y-4 text-gray-600 dark:text-gray-300">
                         <div className="flex items-start gap-3">
                             <MailCheck className="w-5 h-5 text-primary mt-1" />

@@ -101,7 +101,7 @@ export default function JobSplitView() {
     return (
         <>
             <div className="p-4 mx-auto">
-                <h1 className="text-2xl font-bold mb-4">Recommended Jobs</h1>
+                <h1 className="text-2xl font-bold mb-4 text-color">Recommended Jobs</h1>
                 <FilterPanel filters={filters} onChange={handleFilterChange} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -117,7 +117,7 @@ export default function JobSplitView() {
                                     className={`rounded-md p-4 transition-all duration-200${
                                         selectedJob?._id === job._id
                                             ? "ring-theme-primary bg-primary-20 ring-1 ring-theme-primary"
-                                            : " border-1 border-color"
+                                            : " border-1 border-gray bg-color-2"
                                     }`}
                                 >
                                     <div
@@ -127,15 +127,15 @@ export default function JobSplitView() {
                                         <h2 className="font-semibold text-lg text-gray-800 dark:text-white mb-1">
                                             {job.title}
                                         </h2>
-                                        <p className="text-sm text-gray-500 mb-1">
+                                        <p className="text-sm text-gray mb-1">
                                             {job.company?.companyName}
                                         </p>
-                                        <p className="text-sm text-gray-500 mb-1">
+                                        <p className="text-sm text-gray mb-1">
                                             {job.workType?.charAt(0).toUpperCase() +
                                                 job.workType?.slice(1)}
                                         </p>
                                         {job.location && (
-                                            <p className="text-sm text-gray-600 truncate">
+                                            <p className="text-sm text-gray truncate">
                                                 {job.location?.kabupaten?.name},{" "}
                                                 {job.location?.provinsi?.name}
                                             </p>
@@ -202,102 +202,110 @@ export default function JobSplitView() {
                     </div>
 
                     {!isMobile && selectedJob && (
-                        <div className="bg-white dark:bg-gray-900 border-1 border-color p-6 rounded-xl overflow-y-auto max-h-[80vh] relative">
-                            <div className="mb-4">
-                                <div className="flex items-start gap-2">
-                                    <img
-                                        src={selectedJob?.company?.profilePicture}
-                                        alt="Company Logo"
-                                        className="w-20"
-                                    />
-                                    <div>
-                                        <h1 className="text-4xl font-bold">{selectedJob.title}</h1>
-                                        <p className="text-gray-600 text-sm">
-                                            {selectedJob.company?.companyName}
-                                        </p>
-                                        <div className="bg-blue-100 color-primary bg-primary-20 px-3 py-1 rounded-full text-xs font-medium w-fit">
-                                            {selectedJob.workType?.toUpperCase()}
+                        <div className="bg-color-2 p-6 border-gray border-1 rounded-md">
+                            <div className="p-6 overflow-y-auto max-h-[80vh] relative sleek-scrollbar">
+                                <div className="mb-4">
+                                    <div className="flex items-start gap-2">
+                                        <img
+                                            src={selectedJob?.company?.profilePicture}
+                                            alt="Company Logo"
+                                            className="w-20"
+                                        />
+                                        <div>
+                                            <h1 className="text-4xl font-bold text-color">
+                                                {selectedJob.title}
+                                            </h1>
+                                            <p className="text-gray text-sm">
+                                                {selectedJob.company?.companyName}
+                                            </p>
+                                            <div className="bg-blue-100 color-primary bg-primary-20 px-3 py-1 rounded-full text-xs font-medium w-fit">
+                                                {selectedJob.workType?.toUpperCase()}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                {selectedJob.whyThisJob?.length > 0 && (
+                                    <div className="mt-2 bg-primary-20 border-l-4 border-primary px-4 py-2 rounded text-sm">
+                                        <p className="font-semibold mb-1 color-primary">
+                                            Why this job?
+                                        </p>
+                                        <ul className="list-disc list-inside color-primary">
+                                            {selectedJob.whyThisJob.map((reason, idx) => (
+                                                <li key={idx}>{reason}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {selectedJob.location && (
+                                    <div className="mt-4">
+                                        <h2 className="text-xl font-bold text-color">Location</h2>
+                                        <p className="text-sm text-gray">
+                                            {selectedJob.location?.provinsi?.name},{" "}
+                                            {selectedJob.location?.kabupaten?.name}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {selectedJob.salaryRange && (
+                                    <div className="mt-4">
+                                        <h2 className="text-xl font-bold text-color">Salary</h2>
+                                        <p className="text-sm text-gray">
+                                            {formatSalaryRange(selectedJob.salaryRange)}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {selectedJob.requiredSkills?.length > 0 && (
+                                    <div className="mt-4">
+                                        <h2 className="text-xl font-bold text-color">
+                                            Skills Required
+                                        </h2>
+                                        <ul className="flex flex-wrap gap-2">
+                                            {selectedJob.requiredSkills.map((skill) => (
+                                                <li
+                                                    key={skill._id}
+                                                    className="bg-blue-100 bg-primary-20 color-primary text-xs px-2 py-1 rounded-full font-semibold"
+                                                >
+                                                    {skill.name}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {selectedJob.description && (
+                                    <div className="mt-4">
+                                        <h2 className="text-xl font-bold text-color">
+                                            Description
+                                        </h2>
+                                        <p className="text-sm text-gray whitespace-pre-wrap">
+                                            {selectedJob.description}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {selectedJob.company?.description && (
+                                    <div className="mt-4">
+                                        <h2 className="text-lg font-semibold text-color">
+                                            About {selectedJob.company.companyName}
+                                        </h2>
+                                        <p className="text-sm text-gray whitespace-pre-wrap">
+                                            {selectedJob.company.description}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {!selectedJob.hasApplied && (
+                                    <button
+                                        onClick={() => handleApply(selectedJob._id)}
+                                        className="mt-6 text-sm px-4 py-2 rounded btn-primary flex items-center gap-2 text-white font-bold"
+                                    >
+                                        <Send className="w-4 h-4" /> Apply
+                                    </button>
+                                )}
                             </div>
-
-                            {selectedJob.whyThisJob?.length > 0 && (
-                                <div className="mt-2 bg-primary-20 border-l-4 border-primary px-4 py-2 rounded text-sm">
-                                    <p className="font-semibold mb-1 color-primary">
-                                        Why this job?
-                                    </p>
-                                    <ul className="list-disc list-inside color-primary">
-                                        {selectedJob.whyThisJob.map((reason, idx) => (
-                                            <li key={idx}>{reason}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {selectedJob.location && (
-                                <div className="mt-4">
-                                    <h2 className="text-xl font-bold">Location</h2>
-                                    <p className="text-sm text-gray-600">
-                                        {selectedJob.location?.provinsi?.name},{" "}
-                                        {selectedJob.location?.kabupaten?.name}
-                                    </p>
-                                </div>
-                            )}
-
-                            {selectedJob.salaryRange && (
-                                <div className="mt-4">
-                                    <h2 className="text-xl font-bold">Salary</h2>
-                                    <p className="text-sm text-gray-700">
-                                        {formatSalaryRange(selectedJob.salaryRange)}
-                                    </p>
-                                </div>
-                            )}
-
-                            {selectedJob.requiredSkills?.length > 0 && (
-                                <div className="mt-4">
-                                    <h2 className="text-xl font-bold">Skills Required</h2>
-                                    <ul className="flex flex-wrap gap-2">
-                                        {selectedJob.requiredSkills.map((skill) => (
-                                            <li
-                                                key={skill._id}
-                                                className="bg-blue-100 bg-primary-20 color-primary text-xs px-2 py-1 rounded-full font-semibold"
-                                            >
-                                                {skill.name}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {selectedJob.description && (
-                                <div className="mt-4">
-                                    <h2 className="text-xl font-bold">Description</h2>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                        {selectedJob.description}
-                                    </p>
-                                </div>
-                            )}
-
-                            {selectedJob.company?.description && (
-                                <div className="mt-4">
-                                    <h2 className="text-lg font-semibold">
-                                        About {selectedJob.company.companyName}
-                                    </h2>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                        {selectedJob.company.description}
-                                    </p>
-                                </div>
-                            )}
-
-                            {!selectedJob.hasApplied && (
-                                <button
-                                    onClick={() => handleApply(selectedJob._id)}
-                                    className="mt-6 text-sm px-4 py-2 rounded btn-primary flex items-center gap-2"
-                                >
-                                    <Send className="w-4 h-4" /> Apply
-                                </button>
-                            )}
                         </div>
                     )}
                 </div>

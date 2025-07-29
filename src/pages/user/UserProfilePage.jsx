@@ -131,8 +131,8 @@ const UserProfilePage = () => {
     return (
         <>
         <Navigation />
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 pt-[2rem]">
-                <div className="w-full max-w-2xl bg-white dark:bg-gray-800 shadow-xl rounded-xl p-8">
+            <div className="min-h-screen flex items-center justify-center bg-color-2 px-4 pt-[2rem]">
+                <div className="w-full max-w-2xl bg-color-1 shadow-xl rounded-xl p-8">
                     <h1 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">
                         Your Profile
                     </h1>
@@ -212,14 +212,14 @@ const UserProfilePage = () => {
                         ))}
 
                         <div>
-                            <label className="font-semibold text-gray-700 dark:text-gray-300 block">
+                            <label className="font-semibold text-color block">
                                 CV
                             </label>
                             <input type="file" name="cv" onChange={handleFileChange} />
                         </div>
 
                         <div>
-                            <label className="font-semibold text-gray-700 dark:text-gray-300 block">
+                            <label className="font-semibold text-color block">
                                 Portfolio
                             </label>
                             <input type="file" name="portfolio" onChange={handleFileChange} />
@@ -251,7 +251,7 @@ const UserProfilePage = () => {
                             </div>
                         )}
 
-                        <button type="submit" className="btn-primary w-full">
+                        <button type="submit" className="btn-primary w-full font-bold text-white">
                             Save Profile
                         </button>
                     </form>

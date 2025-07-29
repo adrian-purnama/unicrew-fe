@@ -243,7 +243,7 @@ export default function CompanyJobDetailPage() {
     ];
 
     return (
-        <div className="p-6 max-w-5xl mx-auto">
+        <div className="p-6 max-w-5xl mx-auto bg-color-1">
             {job && (
                 <div className="mb-6 space-y-3">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

@@ -109,9 +109,9 @@ const UserHomePage = () => {
         <>
             <Navigation />
 
-            <div className="p-4 max-w-6xl mx-auto">
+            <div className="p-4 max-w-6xl mx-auto bg-color-1">
                 {/* Tabs */}
-                <div className="flex border-b border-color gap-6 mb-6">
+                <div className="flex border-b border-gray gap-6 mb-6">
                     {[
                         { key: "find", label: "Find Jobs" },
                         { key: "accepted", label: "Accepted Jobs" },
@@ -120,7 +120,7 @@ const UserHomePage = () => {
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
                             className={`relative pb-2 font-medium transition-all duration-300 ${
-                                activeTab === tab.key ? "text-primary" : "text-gray-500"
+                                activeTab === tab.key ? "text-primary" : "text-color"
                             }`}
                         >
                             {tab.label}

@@ -34,15 +34,15 @@ export default function LoginForm({ role, title }) {
                 className="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8 w-full max-w-md space-y-6"
             >
                 <h2 className="text-3xl font-bold text-center">
-                    {title} <span className="text-primary">Login</span>
+                    <span className="text-color">{title}</span> <span className="text-primary">Login</span>
                 </h2>
 
                 {/* Email Field */}
-                <div>
+                <div className="text-color">
                     <label className="block font-medium mb-1">Email</label>
                     <input
                         type="email"
-                        className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary"
+                        className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary text-color"
                         placeholder="Enter your email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -51,7 +51,7 @@ export default function LoginForm({ role, title }) {
                 </div>
 
                 {/* Password Field with Show/Hide */}
-                <div>
+                <div className="text-color">
                     <label className="block font-medium mb-1">Password</label>
                     <div className="relative">
                         <input
@@ -79,7 +79,7 @@ export default function LoginForm({ role, title }) {
 
                 <button
                     type="submit"
-                    className="btn-primary w-full flex items-center justify-center gap-2"
+                    className="btn-primary w-full flex items-center justify-center gap-2 text-white font-bold"
                     disabled={!email || !password || loading}
                 >
                     {loading ? (

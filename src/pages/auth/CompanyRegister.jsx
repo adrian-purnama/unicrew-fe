@@ -109,18 +109,18 @@ export default function CompanyRegister() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen flex items-center justify-center bg-background text-text px-4 py-12">
+      <div className="min-h-screen flex items-center justify-center bg-background text-text px-4 py-12 bg-color-1">
         <Toaster position="top-center" />
         <form
           onSubmit={handleSubmit}
           className="bg-white dark:bg-gray-900 shadow-lg p-8 rounded-xl w-full max-w-2xl space-y-6"
         >
-          <h2 className="text-3xl font-bold text-center">
+          <h2 className="text-3xl font-bold text-center text-color">
             Register as <span className="color-primary">Company</span>
           </h2>
 
           {["companyName", "email"].map((field) => (
-            <div key={field}>
+            <div className="text-color" key={field}>
               <label className="block font-medium mb-1 capitalize">{field.replace(/([A-Z])/g, ' $1')}</label>
               <input
                 type={field === "email" ? "email" : "text"}
@@ -131,7 +131,7 @@ export default function CompanyRegister() {
             </div>
           ))}
 
-          <div>
+          <div className="text-color">
             <label className="block font-medium mb-1">Password</label>
             <div className="relative">
               <input
@@ -150,7 +150,7 @@ export default function CompanyRegister() {
             </div>
           </div>
 
-          <div>
+          <div className="text-color">
             <label className="block font-medium mb-1">Confirm Password</label>
             <input
               type="password"
@@ -175,7 +175,7 @@ export default function CompanyRegister() {
             </div>
           </div>
 
-          <div>
+          <div className="text-color">
             <label className="block font-medium mb-1">Description</label>
             <textarea
               value={form.description}
@@ -184,7 +184,7 @@ export default function CompanyRegister() {
             />
           </div>
 
-          <div>
+          <div className="text-color">
             <label className="block font-medium mb-1">Industries (select up to 3)</label>
             <select
               multiple
@@ -204,7 +204,7 @@ export default function CompanyRegister() {
           </div>
 
           {["provinsi", "kabupaten", "kecamatan"].map((loc) => (
-            <div key={loc}>
+            <div className="text-color" key={loc}>
               <label className="block font-medium mb-1 capitalize">{loc}</label>
               <select
                 className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary"
@@ -225,7 +225,7 @@ export default function CompanyRegister() {
           ))}
 
           {["website", "instagram", "twitter", "linkedin"].map((platform) => (
-            <div key={platform}>
+            <div className="text-color" key={platform}>
               <label className="block font-medium mb-1 capitalize">{platform} {platform === "website" && "(optional)"}</label>
               <input
                 type="url"
@@ -237,7 +237,7 @@ export default function CompanyRegister() {
             </div>
           ))}
 
-          <div className="flex items-start gap-2 text-sm">
+          <div className="flex items-start gap-2 text-sm text-color">
             <input
               type="checkbox"
               checked={form.acceptedTerms}
@@ -262,7 +262,7 @@ export default function CompanyRegister() {
               !form.acceptedTerms ||
               Object.values(passwordRules).includes(false)
             }
-            className="btn-primary w-full"
+            className="btn-primary w-full font-bold text-white"
           >
             Register Company
           </button>

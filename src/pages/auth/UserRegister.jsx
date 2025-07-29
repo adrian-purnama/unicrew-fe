@@ -84,13 +84,13 @@ export default function UserRegister() {
     return (
         <>
             <Navigation />
-            <div className="min-h-screen flex items-center justify-center bg-background text-text px-4 my-[4rem]">
+            <div className="min-h-screen flex items-center justify-center bg-background text-text px-4 py-[4rem] bg-color-1">
                 <Toaster />
                 <form
                     onSubmit={handleSubmit}
                     className="w-full max-w-2xl bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8 space-y-6"
                 >
-                    <h2 className="text-3xl font-bold text-center">Register As <span className="color-primary">Student</span></h2>
+                    <h2 className="text-3xl font-bold text-center text-color">Register As <span className="color-primary">Student</span></h2>
 
                     {[
                         { label: "Full Name", name: "fullName", type: "text" },
@@ -99,7 +99,7 @@ export default function UserRegister() {
                         { label: "External System ID", name: "externalSystemId", type: "text" },
                     ].map((field, i) => (
                         <div key={field.name}>
-                            <label className="block mb-1 font-medium">{field.label}</label>
+                            <label className="block mb-1 font-medium text-color">{field.label}</label>
                             <input
                                 ref={(el) => (inputRefs.current[i] = el)}
                                 type={field.type}
@@ -111,7 +111,7 @@ export default function UserRegister() {
                         </div>
                     ))}
 
-                    <div>
+                    <div className="text-color">
                         <label className="block mb-1 font-medium">Password</label>
                         <div className="relative">
                             <input
@@ -135,7 +135,7 @@ export default function UserRegister() {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="text-color">
                         <label className="block mb-1 font-medium">Confirm Password</label>
                         <input
                             type="password"
@@ -165,12 +165,12 @@ export default function UserRegister() {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="text-color">
                         <label className="block mb-1 font-medium">Select University</label>
                         <select
                             value={form.university}
                             onChange={(e) => setForm({ ...form, university: e.target.value })}
-                            className="w-full border px-4 py-2 rounded bg-background text-text"
+                            className="w-full border px-4 py-2 rounded bg-color-2 text-text"
                         >
                             <option value="">-- Select University --</option>
                             {universities.map((uni) => (
@@ -181,12 +181,12 @@ export default function UserRegister() {
                         </select>
                     </div>
 
-                    <div>
+                    <div className="text-color">
                         <label className="block mb-1 font-medium">Select Study Program</label>
                         <select
                             value={form.studyProgram}
                             onChange={(e) => setForm({ ...form, studyProgram: e.target.value })}
-                            className="w-full border px-4 py-2 rounded bg-background text-text"
+                            className="w-full border px-4 py-2 rounded bg-color-2 text-text"
                         >
                             <option value="">-- Select Program --</option>
                             {programs.map((p) => (
@@ -197,7 +197,7 @@ export default function UserRegister() {
                         </select>
                     </div>
 
-                    <div className="flex items-start gap-2 text-sm">
+                    <div className="flex items-start gap-2 text-sm text-color">
                         <input
                             type="checkbox"
                             checked={form.acceptedTerms}
@@ -229,7 +229,7 @@ export default function UserRegister() {
                             !form.acceptedTerms ||
                             Object.values(passwordRules).includes(false)
                         }
-                        className="btn-primary w-full"
+                        className="btn-primary w-full text-white font-bold"
                     >
                         Register
                     </button>

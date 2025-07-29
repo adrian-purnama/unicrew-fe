@@ -58,7 +58,7 @@ export default function ProfileReminderModal() {
 
     return (
         <BaseModal isOpen={show} onClose={dismiss} title="Complete Your Profile">
-            <p className="text-gray-600 dark:text-gray-300 mb-4 text-center">
+            <p className="text-black mb-4 text-center">
                 You've completed <strong>{percent}%</strong> of your profile.
             </p>
 
@@ -66,7 +66,7 @@ export default function ProfileReminderModal() {
                 {fields.map((f) => {
                     const isMissing = missing.some((m) => m.key === f.key);
                     return (
-                        <li key={f.key} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
+                        <li key={f.key} className="flex items-center gap-2 text-sm text-black">
                             {isMissing ? (
                                 <Cross className="text-red-500 w-4 h-4" />
                             ) : (
@@ -81,13 +81,13 @@ export default function ProfileReminderModal() {
             <div className="flex justify-end gap-2">
                 <button
                     onClick={dismiss}
-                    className="btn-primary bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                    className="btn-primary text-white font-bold"
                 >
                     I'll do it later
                 </button>
                 <button
                     onClick={fillNow}
-                    className="btn-primary"
+                    className="btn-primary text-white font-bold"
                 >
                     Fill Now
                 </button>

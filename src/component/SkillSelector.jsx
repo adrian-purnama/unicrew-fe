@@ -49,7 +49,7 @@ const SkillSelector = ({ value = [], onChange }) => {
   };
 
   return (
-    <div>
+    <div className="text-color">
       <label className="font-semibold block mb-1">Skills</label>
       <AsyncSelect
         isMulti

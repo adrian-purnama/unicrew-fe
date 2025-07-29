@@ -122,7 +122,7 @@ export default function FilterPanel({ filters, onChange }) {
     };
 
     return (
-        <div className="relative mb-4">
+        <div className="relative mb-4 text-color">
             <button
                 onClick={() => setIsOpen(true)}
                 className="flex items-center gap-2 text-primary font-medium"
@@ -249,7 +249,7 @@ export default function FilterPanel({ filters, onChange }) {
                             <div className="flex gap-2">
                                 <button
                                     onClick={applyFilters}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                    className=" text-white px-4 py-2 rounded btn-primary font-bold"
                                 >
                                     Apply
                                 </button>
