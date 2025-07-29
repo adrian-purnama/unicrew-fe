@@ -17,7 +17,7 @@ const HomePage = () => {
                 <section className="w-full px-6 pb-10 pt-5 flex flex-col items-center text-center space-y-10">
                     <div className="max-w-3xl">
                         <img
-                            src="/university-hero.png"
+                            src="https://raw.githubusercontent.com/adrian-purnama/photo-host/refs/heads/main/unicru%20photo/university-hero.png"
                             alt="Unicru Hero"
                             className="m-0 max-w-[30rem] mx-auto"
                         />
