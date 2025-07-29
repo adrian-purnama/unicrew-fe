@@ -204,11 +204,11 @@ export default function JobSplitView() {
                     {!isMobile && selectedJob && (
                         <div className="bg-white dark:bg-gray-900 border-1 border-color p-6 rounded-xl overflow-y-auto max-h-[80vh] relative">
                             <div className="mb-4">
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-2">
                                     <img
                                         src={selectedJob?.company?.profilePicture}
                                         alt="Company Logo"
-                                        className="w-10"
+                                        className="w-20"
                                     />
                                     <div>
                                         <h1 className="text-4xl font-bold">{selectedJob.title}</h1>
