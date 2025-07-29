@@ -29,7 +29,7 @@ export default function LoginOptions() {
         </button>
       </div> */}
 
-      <h2 className="text-3xl font-bold text-center">Register Now</h2>
+      <h2 className="text-3xl font-bold text-center">Register Nownpm run dev</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <button
           onClick={() => handleLogin("company")}
