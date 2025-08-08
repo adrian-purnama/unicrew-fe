@@ -245,3 +245,22 @@ html.dark {
   display: none; 
 } */
 
+/* Custom glow on hover for CTA buttons */
+.cursor-glow {
+  position: relative;
+}
+.cursor-glow::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: calc(100% + 10px);
+  height: calc(100% + 10px);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.cursor-glow:hover::after {
+  opacity: 1;
+}

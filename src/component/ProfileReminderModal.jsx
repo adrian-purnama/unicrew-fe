@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, X as Cross } from "lucide-react";
+import { Check, X as Cross, Clock } from "lucide-react";
 import BaseModal from "./BaseModal";
 import axiosInstance from "../../utils/ApiHelper";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,11 @@ const fields = [
 export default function ProfileReminderModal() {
     const [show, setShow] = useState(false);
     const [missing, setMissing] = useState([]);
+    const [isVerified, setIsVerified] = useState(true);
+    const [daysRemaining, setDaysRemaining] = useState(null);
+    const [createdAt, setCreatedAt] = useState(null);
+    const [snoozeChecked, setSnoozeChecked] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,14 +43,22 @@ export default function ProfileReminderModal() {
             );
 
             setMissing(missingFields);
-            if (missingFields.length > 0) setShow(true);
+            setIsVerified(res.data.isVerified);
+            setDaysRemaining(res.data.daysRemainingUntilDeletion ?? null);
+            setCreatedAt(res.data.createdAt); // You might need to add this in backend
+
+            if (missingFields.length > 0 || !res.data.isVerified) setShow(true);
         } catch (err) {
             console.error("Failed to check profile:", err.message);
         }
     };
 
     const dismiss = () => {
-        localStorage.setItem(PROFILE_REMINDER_KEY, Date.now().toString());
+        if (snoozeChecked) {
+            localStorage.setItem(PROFILE_REMINDER_KEY, Date.now().toString());
+        } else {
+            localStorage.removeItem(PROFILE_REMINDER_KEY);
+        }
         setShow(false);
     };
 
@@ -54,10 +67,55 @@ export default function ProfileReminderModal() {
         navigate("/user/profile");
     };
 
+    const resendEmail = async () => {
+        try {
+            const token = localStorage.getItem("unicru-token");
+            await axiosInstance.post("/auth/reverify", { token });
+            alert("Verification email resent!");
+        } catch (err) {
+            alert("Failed to resend verification email.");
+        }
+    };
+
     const percent = Math.round(((fields.length - missing.length) / fields.length) * 100);
+
+    const isRecentlyCreated = () => {
+        if (!createdAt) return false;
+        const created = new Date(createdAt).getTime();
+        return Date.now() - created < 2 * 60 * 60 * 1000; // < 2 hours
+    };
 
     return (
         <BaseModal isOpen={show} onClose={dismiss} title="Complete Your Profile">
+            {!isVerified && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <strong>Email not verified.</strong>
+                            <br />
+                            {isRecentlyCreated() ? (
+                                <span>
+                                    Please check your email (and spam folder) to verify your
+                                    account.
+                                </span>
+                            ) : (
+                                <span>
+                                    Your account will be deleted in{" "}
+                                    <strong>{daysRemaining} days</strong> if not verified.{" "}
+                                    <button
+                                        onClick={resendEmail}
+                                        className="text-blue-600 underline ml-1"
+                                    >
+                                        Resend verification link
+                                    </button>
+                                </span>
+                            )}
+                        </div>
+                        <Clock className="w-5 h-5 text-red-500" />
+                    </div>
+                </div>
+            )}
+
             <p className="text-black mb-4 text-center">
                 You've completed <strong>{percent}%</strong> of your profile.
             </p>
@@ -78,19 +136,23 @@ export default function ProfileReminderModal() {
                 })}
             </ul>
 
-            <div className="flex justify-end gap-2">
-                <button
-                    onClick={dismiss}
-                    className="btn-primary text-white font-bold"
-                >
-                    I'll do it later
-                </button>
-                <button
-                    onClick={fillNow}
-                    className="btn-primary text-white font-bold"
-                >
-                    Fill Now
-                </button>
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+                <input
+                    type="checkbox"
+                    checked={snoozeChecked}
+                    onChange={(e) => setSnoozeChecked(e.target.checked)}
+                />
+                Don't show again for 1 day
+            </label>
+            <div className="flex items-center justify-between mt-4">
+                <div className="flex gap-2">
+                    <button onClick={dismiss} className="btn-primary text-white font-bold">
+                        I'll do it later
+                    </button>
+                    <button onClick={fillNow} className="btn-primary text-white font-bold">
+                        Fill Now
+                    </button>
+                </div>
             </div>
         </BaseModal>
     );

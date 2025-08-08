@@ -57,10 +57,10 @@ function App() {
                 setId(_id);
                 console.log("✅ Authenticated:", res.data);
 
-                const currentRoot = location.pathname.split("/")[1];
-                if (currentRoot !== role) {
-                    navigate(`/${role}`, { replace: true });
-                }
+                // const currentRoot = location.pathname.split("/")[1];
+                // if (currentRoot !== role) {
+                //     navigate(`/${role}`, { replace: true });
+                // }
 
                 const resNotif = await axiosInstance.get(
                     "/notification/notifications?page=1&limit=20"

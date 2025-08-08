@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Eye, EyeOff, Loader } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import axiosInstance from "../../utils/ApiHelper";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginForm({ role, title }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate()
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -18,7 +20,7 @@ export default function LoginForm({ role, title }) {
             const res = await axiosInstance.post("/login/login", { email, password, role });
             localStorage.setItem("unicru-token", res.data.token);
             toast.success("Login successful!");
-            setTimeout(() => location.reload(), 1000);
+            setTimeout(() => navigate(`/${role}`), 1000);
         } catch (err) {
             toast.error(err.response?.data?.message || "Login failed");
         } finally {
@@ -34,7 +36,8 @@ export default function LoginForm({ role, title }) {
                 className="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8 w-full max-w-md space-y-6"
             >
                 <h2 className="text-3xl font-bold text-center">
-                    <span className="text-color">{title}</span> <span className="text-primary">Login</span>
+                    <span className="text-color">{title}</span>{" "}
+                    <span className="text-primary">Login</span>
                 </h2>
 
                 {/* Email Field */}
@@ -90,7 +93,16 @@ export default function LoginForm({ role, title }) {
                         "Login"
                     )}
                 </button>
-                <div className="text-center">
+                <div className="text-center text-sm flex justify-center items-center gap-2">
+                    <a
+                        href={`/auth/${role}/register`}
+                        className="text-sm text-primary hover:underline"
+                    >
+                        Register
+                    </a>
+
+                    <span>or</span>
+
                     <a
                         href={`/forgot-password?role=${role}`}
                         className="text-sm text-primary hover:underline"

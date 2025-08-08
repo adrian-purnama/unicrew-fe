@@ -5,23 +5,18 @@ import ProfilePictureUploader from "../../component/ProfilePictureUploader";
 import SkillSelector from "../../component/SkillSelector";
 import toast from "react-hot-toast";
 import Navigation from "../../component/Navigation";
+import LocationSelector from "../../component/LocationSelector";
 
 const UserProfilePage = () => {
     const { profilePicture } = useContext(UserContext);
     const [profile, setProfile] = useState(null);
     const [form, setForm] = useState({});
-    const [locationOptions, setLocationOptions] = useState({
-        provinsi: [],
-        kabupaten: [],
-        kecamatan: [],
-    });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
                 const [userRes, provinsiRes] = await Promise.all([
                     axiosInstance.get("/user/profile"),
-                    axiosInstance.get("/admin/provinsi"),
                 ]);
 
                 const user = userRes.data;
@@ -40,7 +35,6 @@ const UserProfilePage = () => {
                     },
                 });
 
-                setLocationOptions((prev) => ({ ...prev, provinsi: provinsiRes.data }));
             } catch (err) {
                 toast.error("Failed to load profile data");
             }
@@ -49,25 +43,6 @@ const UserProfilePage = () => {
         fetchInitialData();
     }, []);
 
-    useEffect(() => {
-        const provinsiId = form.location?.provinsi;
-        if (provinsiId) {
-            axiosInstance
-                .get(`/admin/kabupaten?provinsi=${provinsiId}`)
-                .then((res) => setLocationOptions((prev) => ({ ...prev, kabupaten: res.data })))
-                .catch(() => toast.error("Failed to load kabupaten"));
-        }
-    }, [form.location?.provinsi]);
-
-    useEffect(() => {
-        const kabupatenId = form.location?.kabupaten;
-        if (kabupatenId) {
-            axiosInstance
-                .get(`/admin/kecamatan?kabupaten=${kabupatenId}`)
-                .then((res) => setLocationOptions((prev) => ({ ...prev, kecamatan: res.data })))
-                .catch(() => toast.error("Failed to load kecamatan"));
-        }
-    }, [form.location?.kabupaten]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -130,7 +105,7 @@ const UserProfilePage = () => {
 
     return (
         <>
-        <Navigation />
+            <Navigation />
             <div className="min-h-screen flex items-center justify-center bg-color-2 px-4 pt-[2rem]">
                 <div className="w-full max-w-2xl bg-color-1 shadow-xl rounded-xl p-8">
                     <h1 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">
@@ -184,44 +159,18 @@ const UserProfilePage = () => {
                             onChange={(skills) => setForm((prev) => ({ ...prev, skills }))}
                         />
 
-                        {["provinsi", "kabupaten", "kecamatan"].map((level) => (
-                            <div key={level}>
-                                <label className="font-semibold text-gray-700 dark:text-gray-300 block capitalize">
-                                    {level}{" "}
-                                    {level === "provinsi" ? (
-                                        <span className="text-red-500">*</span>
-                                    ) : (
-                                        <span className="text-gray-400 text-sm">(optional)</span>
-                                    )}
-                                </label>
-                                <select
-                                    name={`location.${level}`}
-                                    value={form.location?.[level] || ""}
-                                    onChange={handleChange}
-                                    className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded"
-                                    required={level === "provinsi"}
-                                >
-                                    <option value="">-- Select {level} --</option>
-                                    {locationOptions[level].map((item) => (
-                                        <option key={item._id} value={item._id}>
-                                            {item.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        ))}
+                        <LocationSelector
+                            value={form.location}
+                            onChange={(location) => setForm((prev) => ({ ...prev, location }))}
+                        />
 
                         <div>
-                            <label className="font-semibold text-color block">
-                                CV
-                            </label>
+                            <label className="font-semibold text-color block">CV</label>
                             <input type="file" name="cv" onChange={handleFileChange} />
                         </div>
 
                         <div>
-                            <label className="font-semibold text-color block">
-                                Portfolio
-                            </label>
+                            <label className="font-semibold text-color block">Portfolio</label>
                             <input type="file" name="portfolio" onChange={handleFileChange} />
                         </div>
 

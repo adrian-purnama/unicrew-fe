@@ -3,8 +3,11 @@ import axiosInstance from "../../../utils/ApiHelper";
 import toast, { Toaster } from "react-hot-toast";
 import { Eye, EyeOff, Check } from "lucide-react";
 import Navigation from "../../component/Navigation";
+import CustomSelect from "../../component/CustomSelect";
+import { useNavigate } from "react-router-dom";
 
 export default function UserRegister() {
+    const navigate = useNavigate()
     const [form, setForm] = useState({
         fullName: "",
         birthDate: "",
@@ -20,6 +23,8 @@ export default function UserRegister() {
     const [universities, setUniversities] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [showPassword, setShowPassword] = useState(false);
+    const [step, setStep] = useState(1);
+
     const [passwordRules, setPasswordRules] = useState({
         length: false,
         number: false,
@@ -27,18 +32,9 @@ export default function UserRegister() {
         match: false,
     });
 
-    const inputRefs = useRef([]);
-
     useEffect(() => {
-        axiosInstance
-            .get("/admin/university")
-            .then((res) => setUniversities(res.data || []))
-            .catch(() => toast.error("Failed to fetch universities"));
-
-        axiosInstance
-            .get("/admin/study-program")
-            .then((res) => setPrograms(res.data || []))
-            .catch(() => toast.error("Failed to fetch study programs"));
+        axiosInstance.get("/admin/university").then((res) => setUniversities(res.data || []));
+        axiosInstance.get("/admin/study-program").then((res) => setPrograms(res.data || []));
     }, []);
 
     useEffect(() => {
@@ -67,17 +63,152 @@ export default function UserRegister() {
         try {
             const payload = { ...form };
             delete payload.confirmPassword;
-            await axiosInstance.post("/register/user", payload);
-            toast.success("Registered! Check email to verify.");
+            const res = await axiosInstance.post("/register/user", payload);
+            const { token } = res.data;
+            localStorage.setItem("unicru-token", token);
+            toast.success("Registered and logged in!");
+                        setTimeout(() => navigate(`/user`), 1000);
+
+            
         } catch (err) {
             toast.error(err.response?.data?.message || "Registration failed");
         }
     };
 
-    const handleKeyDown = (e, i) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            inputRefs.current[i + 1]?.focus();
+    const renderStep = () => {
+        switch (step) {
+            case 1:
+                return (
+                    <>
+                        <Input
+                            label="Full Name"
+                            name="fullName"
+                            value={form.fullName}
+                            onChange={setForm}
+                        />
+                        <Input
+                            label="Birth Date"
+                            name="birthDate"
+                            type="date"
+                            value={form.birthDate}
+                            onChange={setForm}
+                        />
+                        <Input
+                            label="Email (.ac.id / .edu)"
+                            name="email"
+                            type="email"
+                            value={form.email}
+                            onChange={setForm}
+                        />
+                    </>
+                );
+            case 2:
+                return (
+                    <>
+                        <div className="text-color">
+                            <label className="block mb-1 font-medium">Password</label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={form.password}
+                                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                    className="w-full border px-4 py-2 rounded pr-10 focus:outline-primary bg-background text-text"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute right-2 top-2 text-gray-400"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="w-5 h-5" />
+                                    ) : (
+                                        <Eye className="w-5 h-5" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        <Input
+                            label="Confirm Password"
+                            name="confirmPassword"
+                            type="password"
+                            value={form.confirmPassword}
+                            onChange={setForm}
+                        />
+
+                        <div className="space-y-1 text-sm text-gray-500 dark:text-gray-400">
+                            <Requirement met={passwordRules.length}>
+                                At least 8 characters
+                            </Requirement>
+                            <Requirement met={passwordRules.symbol}>
+                                At least 1 special character
+                            </Requirement>
+                            <Requirement met={passwordRules.number}>At least 1 number</Requirement>
+                            <Requirement met={passwordRules.match}>Passwords match</Requirement>
+                        </div>
+                    </>
+                );
+            case 3:
+                return (
+                    <>
+                        <Input
+                            label="External System ID (NIM)"
+                            name="externalSystemId"
+                            value={form.externalSystemId}
+                            onChange={setForm}
+                        />
+                        <CustomSelect
+                            label="Select University"
+                            endpoint="/admin/university"
+                            value={form.university}
+                            onChange={(val) => setForm({ ...form, university: val?.value || "" })}
+                        />
+                        <CustomSelect
+                            label="Select Study Program"
+                            endpoint="/admin/study-program"
+                            value={form.studyProgram}
+                            onChange={(val) => setForm({ ...form, studyProgram: val?.value || "" })}
+                        />
+                        <div className="flex items-start gap-2 text-sm text-color">
+                            <input
+                                type="checkbox"
+                                checked={form.acceptedTerms}
+                                onChange={(e) =>
+                                    setForm({ ...form, acceptedTerms: e.target.checked })
+                                }
+                            />
+                            <label>
+                                I agree to the{" "}
+                                <a href="#" className="underline text-primary">
+                                    Terms
+                                </a>{" "}
+                                and{" "}
+                                <a href="#" className="underline text-primary">
+                                    Privacy Policy
+                                </a>
+                                .
+                            </label>
+                        </div>
+                    </>
+                );
+        }
+    };
+
+    const isStepValid = () => {
+        switch (step) {
+            case 1:
+                return form.fullName && form.birthDate && form.email;
+            case 2:
+                return Object.values(passwordRules).every(Boolean);
+            case 3:
+                return (
+                    form.externalSystemId &&
+                    form.university &&
+                    form.studyProgram &&
+                    form.acceptedTerms
+                );
+            default:
+                return false;
         }
     };
 
@@ -90,151 +221,89 @@ export default function UserRegister() {
                     onSubmit={handleSubmit}
                     className="w-full max-w-2xl bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8 space-y-6"
                 >
-                    <h2 className="text-3xl font-bold text-center text-color">Register As <span className="color-primary">Student</span></h2>
+                    <h2 className="text-3xl font-bold text-center text-color">
+                        Register as <span className="color-primary">Student</span>
+                    </h2>
 
-                    {[
-                        { label: "Full Name", name: "fullName", type: "text" },
-                        { label: "Birth Date", name: "birthDate", type: "date" },
-                        { label: "Email (.ac.id / .edu)", name: "email", type: "email" },
-                        { label: "External System ID", name: "externalSystemId", type: "text" },
-                    ].map((field, i) => (
-                        <div key={field.name}>
-                            <label className="block mb-1 font-medium text-color">{field.label}</label>
-                            <input
-                                ref={(el) => (inputRefs.current[i] = el)}
-                                type={field.type}
-                                value={form[field.name]}
-                                onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
-                                onKeyDown={(e) => handleKeyDown(e, i)}
-                                className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline-primary"
-                            />
-                        </div>
-                    ))}
+                    <p className="text-sm text-center text-gray-500">Step {step} of 3</p>
 
-                    <div className="text-color">
-                        <label className="block mb-1 font-medium">Password</label>
-                        <div className="relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                value={form.password}
-                                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                onKeyDown={(e) => handleKeyDown(e, 4)}
-                                className="w-full border px-4 py-2 rounded pr-10 focus:outline-primary bg-background text-text"
-                            />
+                    {renderStep()}
+
+                    <div className="flex justify-between pt-4">
+                        {step > 1 && (
                             <button
                                 type="button"
-                                className="absolute right-2 top-2 text-gray-400"
-                                onClick={() => setShowPassword(!showPassword)}
+                                onClick={() => setStep(step - 1)}
+                                className="px-4 py-2 border rounded text-sm"
                             >
-                                {showPassword ? (
-                                    <EyeOff className="w-5 h-5" />
-                                ) : (
-                                    <Eye className="w-5 h-5" />
-                                )}
+                                Back
                             </button>
-                        </div>
+                        )}
+                        {step < 3 ? (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (isStepValid()) setStep(step + 1);
+                                    else toast.error("Please complete all fields");
+                                }}
+                                className="btn-primary px-6 text-white font-bold"
+                            >
+                                Next
+                            </button>
+                        ) : (
+                            <button
+                                type="submit"
+                                className="btn-primary px-6 text-white font-bold"
+                                disabled={!isStepValid()}
+                            >
+                                Register
+                            </button>
+                        )}
                     </div>
-
-                    <div className="text-color">
-                        <label className="block mb-1 font-medium">Confirm Password</label>
-                        <input
-                            type="password"
-                            value={form.confirmPassword}
-                            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, 5)}
-                            className="w-full border px-4 py-2 rounded focus:outline-primary bg-background text-text"
-                        />
-                    </div>
-
-                    <div className="space-y-1 text-sm text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center gap-2">
-                            {passwordRules.length && <Check className="text-green-500 w-4 h-4" />}
-                            <span>At least 8 characters</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {passwordRules.symbol && <Check className="text-green-500 w-4 h-4" />}
-                            <span>At least 1 special character</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {passwordRules.number && <Check className="text-green-500 w-4 h-4" />}
-                            <span>At least 1 number</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {passwordRules.match && <Check className="text-green-500 w-4 h-4" />}
-                            <span>Passwords match</span>
-                        </div>
-                    </div>
-
-                    <div className="text-color">
-                        <label className="block mb-1 font-medium">Select University</label>
-                        <select
-                            value={form.university}
-                            onChange={(e) => setForm({ ...form, university: e.target.value })}
-                            className="w-full border px-4 py-2 rounded bg-color-2 text-text"
+                    <div className="text-center text-sm">
+                        <a
+                            href={`/auth/user/login`}
+                            className="text-sm text-primary hover:underline"
                         >
-                            <option value="">-- Select University --</option>
-                            {universities.map((uni) => (
-                                <option key={uni._id} value={uni._id}>
-                                    {uni.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                            Login
+                        </a>
 
-                    <div className="text-color">
-                        <label className="block mb-1 font-medium">Select Study Program</label>
-                        <select
-                            value={form.studyProgram}
-                            onChange={(e) => setForm({ ...form, studyProgram: e.target.value })}
-                            className="w-full border px-4 py-2 rounded bg-color-2 text-text"
+                        <span className="mx-2">or</span>
+
+                        <a
+                            href={`/forgot-password?role=user`}
+                            className="text-sm text-primary hover:underline"
                         >
-                            <option value="">-- Select Program --</option>
-                            {programs.map((p) => (
-                                <option key={p._id} value={p._id}>
-                                    {p.name}
-                                </option>
-                            ))}
-                        </select>
+                            Forgot password?
+                        </a>
                     </div>
-
-                    <div className="flex items-start gap-2 text-sm text-color">
-                        <input
-                            type="checkbox"
-                            checked={form.acceptedTerms}
-                            onChange={(e) => setForm({ ...form, acceptedTerms: e.target.checked })}
-                        />
-                        <label>
-                            I agree to the{" "}
-                            <a href="#" className="underline text-primary">
-                                Terms
-                            </a>{" "}
-                            and{" "}
-                            <a href="#" className="underline text-primary">
-                                Privacy Policy
-                            </a>
-                            .
-                        </label>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={
-                            !form.fullName ||
-                            !form.birthDate ||
-                            !form.email ||
-                            !form.password ||
-                            !form.confirmPassword ||
-                            !form.university ||
-                            !form.studyProgram ||
-                            !form.acceptedTerms ||
-                            Object.values(passwordRules).includes(false)
-                        }
-                        className="btn-primary w-full text-white font-bold"
-                    >
-                        Register
-                    </button>
                 </form>
             </div>
         </>
+    );
+}
+
+// Reusable field component
+function Input({ label, name, type = "text", value, onChange }) {
+    return (
+        <div className="text-color">
+            <label className="block mb-1 font-medium">{label}</label>
+            <input
+                type={type}
+                value={value}
+                onChange={(e) => onChange((prev) => ({ ...prev, [name]: e.target.value }))}
+                className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline-primary"
+            />
+        </div>
+    );
+}
+
+// Requirement bullet
+function Requirement({ met, children }) {
+    return (
+        <div className="flex items-center gap-2">
+            <Check className={`w-4 h-4 ${met ? "text-green-500" : "text-gray-400"}`} />
+            <span>{children}</span>
+        </div>
     );
 }
