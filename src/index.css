@@ -264,3 +264,22 @@ html.dark {
 .cursor-glow:hover::after {
   opacity: 1;
 }
+
+@keyframes wobble {
+  0%, 100% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  25% {
+    transform: translate(-48%, -2%) scale(1.05);
+  }
+  50% {
+    transform: translate(-52%, 2%) scale(0.98);
+  }
+  75% {
+    transform: translate(-51%, -1%) scale(1.03);
+  }
+}
+
+.animate-wobble {
+  animation: wobble 8s ease-in-out infinite;
+}

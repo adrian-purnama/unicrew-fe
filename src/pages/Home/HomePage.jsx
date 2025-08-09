@@ -12,6 +12,7 @@ import CTAButtons from "../../component/CTAButtons";
 const CanvasParallaxCircles = ({ count = 30 }) => {
     const canvasRef = useRef(null);
     const circles = useRef([]);
+    const animationStart = useRef(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -26,36 +27,50 @@ const CanvasParallaxCircles = ({ count = 30 }) => {
 
         // Generate circles with random attributes
         circles.current = Array.from({ length: count }, () => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            radius: Math.random() * 5 + 1, // 2 - 10px
-            color: Math.random() > 0.5 ? "#77C3E5" : "#a3a3a3", // primary/secondary-ish
-            speed: Math.random() * 0.05 + 0.001, // depth speed
+            baseX: Math.random() * canvas.width,
+            baseY: Math.random() * canvas.height,
+            radius: Math.random() * 5 + 2,
+            color: Math.random() > 0.5 ? "#77C3E5" : "#a3a3a3",
+            depth: Math.random() * 0.5 + 0.2, // how much it moves with scroll
+            opacity: 0, // start transparent
+            scale: 0.5, // start smaller
         }));
 
         const draw = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const scrollY = window.scrollY;
+
             circles.current.forEach((c) => {
+                const x = c.baseX;
+                const y = c.baseY + scrollY * c.depth;
                 ctx.beginPath();
-                ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
-                ctx.fillStyle = c.color;
+                ctx.arc(x, y, c.radius * c.scale, 0, Math.PI * 2);
+                ctx.fillStyle = `${c.color}${Math.floor(c.opacity * 255)
+                    .toString(16)
+                    .padStart(2, "0")}`;
                 ctx.fill();
             });
         };
 
-        const handleScroll = () => {
-            const scrollY = window.scrollY;
+        const animateEntrance = (timestamp) => {
+            if (!animationStart.current) animationStart.current = timestamp;
+            const progress = Math.min((timestamp - animationStart.current) / 1000, 1); // 1s fade-in
+
             circles.current.forEach((c) => {
-                c.y = (c.y + scrollY * c.speed) % (canvas.height + c.radius * 2);
+                c.opacity = progress;
+                c.scale = 0.5 + progress * 0.5; // from 0.5 → 1
             });
+
             draw();
+            if (progress < 1) requestAnimationFrame(animateEntrance);
         };
 
-        draw();
-        window.addEventListener("scroll", handleScroll);
+        requestAnimationFrame(animateEntrance);
+
+        window.addEventListener("scroll", draw);
 
         return () => {
-            window.removeEventListener("scroll", handleScroll);
+            window.removeEventListener("scroll", draw);
             window.removeEventListener("resize", resizeCanvas);
         };
     }, [count]);
@@ -85,15 +100,15 @@ const HomePage = () => {
             <main className="min-h-screen bg-color-1">
                 {/* ===== HERO SECTION ===== */}
                 <section className="relative overflow-hidden w-full min-h-screen px-6 pt-24 pb-20 text-center bg-gradient-to-b from-color-1 to-color-2">
-                    <CanvasParallaxCircles count={30} />
+                    <CanvasParallaxCircles count={20} />
 
                     {/* Blurred background circle */}
                     <div
                         aria-hidden="true"
-                        className="absolute top-1/3 left-1/2 w-[500px] h-[500px] -translate-x-1/2 rounded-full"
+                        className="absolute top-1/5 left-1/2 w-[500px] h-[500px] -translate-x-1/2 rounded-full"
                         style={{
-                            backgroundColor: "rgba(119, 195, 229, 0.25)", // primary color with opacity
-                            filter: "blur(140px)",
+                            backgroundColor: "rgba(119, 195, 229, .5)", // primary color with opacity
+                            filter: "blur(100px)",
                             zIndex: 0,
                         }}
                     />
@@ -109,7 +124,7 @@ const HomePage = () => {
                         <motion.img
                             src="https://raw.githubusercontent.com/adrian-purnama/photo-host/refs/heads/main/unicru%20photo/university-hero.png"
                             alt="Unicru Hero"
-                            className="m-0 max-w-[26rem] mx-auto"
+                            className="m-0 w-[15rem] sm:w-[26rem] mx-auto"
                             initial={{ scale: 0.9 }}
                             animate={{ scale: 1 }}
                             transition={{ duration: 1, ease: "easeOut" }}
@@ -124,14 +139,22 @@ const HomePage = () => {
                             UNIKRU
                         </motion.h1>
 
-                        <BlurText
+                        {/* <BlurText
                             text="Where Students and Companies Connect"
                             delay={150}
                             animateBy="words"
                             direction="top"
                             className="text-3xl sm:text-4xl font-bold text-color"
-                        />
+                        /> */}
 
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, delay: 0.6 }}
+                            className="text-4xl font-bold text-center text-color"
+                        >
+                            Where Students and Companies Connect
+                        </motion.h2>
                         <motion.p
                             className="max-w-xl mx-auto text-gray text-sm sm:text-base"
                             initial={{ opacity: 0 }}
@@ -156,8 +179,11 @@ const HomePage = () => {
                         aria-hidden="true"
                         className="absolute bottom-0 left-0 w-full h-[10rem] pointer-events-none"
                         style={{
-                            background:
-                                "linear-gradient(to bottom, rgba(255,255,255,0) 0%, white 100%)",
+                            background: `linear-gradient(
+                                to bottom,
+                                rgba(var(--color-bg-1), 0) 0%,
+                                rgba(var(--color-bg-1), 1) 100%
+                            )`,
                             zIndex: 20,
                         }}
                     />
@@ -215,7 +241,7 @@ const HomePage = () => {
                             </div>
 
                             <Link
-                                to="/register"
+                                to="/auth/user/register"
                                 className="px-5 py-2 bg-primary text-white rounded-full shadow hover:bg-primary/90 transition cursor-glow"
                             >
                                 Join Now
@@ -244,7 +270,7 @@ const HomePage = () => {
                         ].map(({ step, text, icon }, i) => (
                             <motion.div
                                 key={i}
-                                className="flex flex-col items-center text-center bg-white shadow rounded-xl p-4 hover:shadow-lg transition transform hover:-translate-y-1"
+                                className="flex flex-col items-center text-center bg-color-1 shadow rounded-xl p-4 hover:shadow-lg transition transform hover:-translate-y-1"
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: i * 0.2 }}
@@ -269,8 +295,8 @@ const HomePage = () => {
                     viewport={{ once: true }}
                 >
                     <h2 className="text-3xl font-bold mb-4 text-color">Support & Guidance</h2>
-                    <div className="max-w-2xl mx-auto text-left space-y-4 text-gray-600">
-                        <div className="flex items-start gap-3">
+                    <div className="max-w-2xl mx-auto text-left space-y-4 text-gray">
+                        <div className="flex items-start gap-3 ">
                             <MailCheck className="w-5 h-5 text-primary mt-1" />
                             <p>
                                 <strong>Email Verification:</strong> You must verify your email

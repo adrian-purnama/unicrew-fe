@@ -150,7 +150,7 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
                         <div className="col-span-12 mb-2 hidden lg:block">
                             <button
                                 onClick={() => setShowFilter((prev) => !prev)}
-                                className="text-sm text-primary flex items-center gap-1 px-3 py-2 border border-primary rounded-lg hover:bg-primary-20 transition-all duration-200 font-medium"
+                                className="h-text-sm text-primary flex items-center gap-1 px-3 py-2 border border-primary rounded-sm hover:bg-primary-20 transition-all duration-200 font-medium"
                             >
                                 {showFilter ? (
                                     <ChevronLeft className="w-4 h-4" />

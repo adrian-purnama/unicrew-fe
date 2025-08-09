@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../../utils/UserContext";
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, Sun, Moon } from "lucide-react";
 import { Popover } from "@headlessui/react";
 import axiosInstance from "../../utils/ApiHelper";
 
@@ -18,6 +18,8 @@ export default function Navigation() {
         notifications,
         setNotifications,
     } = useContext(UserContext);
+
+    const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
     const navigate = useNavigate();
 
@@ -46,43 +48,51 @@ export default function Navigation() {
     };
 
     const roleLinks = {
-        user: [
-            { to: "/user", label: "Dashboard" },
-            // { to: "/user/profile", label: "Profile" },
-        ],
-        company: [
-            { to: "/company", label: "Dashboard" },
-            // { to: "/company/profile", label: "Profile" },
-        ],
+        user: [{ to: "/user", label: "Dashboard" }],
+        company: [{ to: "/company", label: "Dashboard" }],
         admin: [
             { to: "/admin", label: "Dashboard" },
             { to: "/admin/entry", label: "Data Entry" },
         ],
     };
 
+    // Toggle Theme
+    const toggleTheme = () => {
+        const newTheme = theme === "light" ? "dark" : "light";
+        setTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
+    };
+
+    // Apply theme to HTML root
+    useEffect(() => {
+        if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }, [theme]);
 
     return (
         <nav className="nav-container flex items-center justify-between px-6 py-3 border-gray border-b-1 bg-color-1">
             <div className="flex items-center justify-between w-full">
                 {/* Left */}
                 <div className="flex items-center space-x-4">
-                    {/* <span className="text-xl font-semibold capitalize">Unicru</span> */}
                     <img
                         onClick={() => navigate("/")}
                         src="/unicru logo.png"
                         alt="Unicru Logo"
                         className="w-8 cursor-pointer"
                     />
-                    {/* {links.map((link) => (
-            <Link key={link.to} to={link.to} className="nav-link">
-              {link.label}
-            </Link>
-          ))} */}
                 </div>
 
                 {/* Right */}
                 {isLoggedIn ? (
                     <div className="flex items-center space-x-4">
+                        {/* Theme Toggle */}
+                        <button onClick={toggleTheme} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+                            {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                        </button>
+
                         {/* Notification */}
                         <Popover className="relative">
                             <Popover.Button className="relative">
@@ -149,9 +159,13 @@ export default function Navigation() {
                     </div>
                 ) : (
                     <div className="flex items-center gap-3 text-sm">
+                        {/* Theme Toggle for logged out users */}
+                        <button onClick={toggleTheme} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+                            {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                        </button>
                         <Link
                             to="/auth/company/login"
-                            className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:border-gray-600 font-bold underline"
+                            className="px-4 py-2 text-color hover:border-gray-600 font-bold underline text-color"
                         >
                             For Employers
                         </Link>
