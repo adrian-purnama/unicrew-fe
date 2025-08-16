@@ -31,7 +31,7 @@ export default function ChatModal({ roomId, isOpen, onClose }) {
             });
 
         // const ws = new WebSocket(`ws://localhost:10000/ws/chat/${roomId}?token=${token}`);
-        const ws = new WebSocket(`ws://unicrew-be.onrender.com/ws/chat/${roomId}?token=${token}`);
+        const ws = new WebSocket(`wss://unicrew-be.onrender.com/ws/chat/${roomId}?token=${token}`);
         socketRef.current = ws;
 
         ws.onopen = () => {
