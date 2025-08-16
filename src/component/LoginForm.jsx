@@ -33,7 +33,7 @@ export default function LoginForm({ role, title }) {
             <Toaster position="top-center" />
             <form
                 onSubmit={handleLogin}
-                className="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8 w-full max-w-md space-y-6"
+                className="bg-color-2 shadow-xl rounded-xl p-8 w-full max-w-md space-y-6"
             >
                 <h2 className="text-3xl font-bold text-center">
                     <span className="text-color">{title}</span>{" "}

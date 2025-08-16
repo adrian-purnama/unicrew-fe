@@ -219,7 +219,7 @@ export default function UserRegister() {
                 <Toaster />
                 <form
                     onSubmit={handleSubmit}
-                    className="w-full max-w-2xl bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8 space-y-6"
+                    className="w-full max-w-2xl bg-color-2 shadow-xl rounded-xl p-8 space-y-6"
                 >
                     <h2 className="text-3xl font-bold text-center text-color">
                         Register as <span className="color-primary">Student</span>
