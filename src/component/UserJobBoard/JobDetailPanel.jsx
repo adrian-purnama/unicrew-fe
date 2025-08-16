@@ -33,60 +33,57 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
         return Array.from({ length: 5 }, (_, index) => (
             <Star
                 key={index}
-                className={`w-4 h-4 ${
-                    index < Math.floor(rating)
+                className={`w-4 h-4 ${index < Math.floor(rating)
                         ? "text-yellow-400 fill-current"
                         : index < rating
-                        ? "text-yellow-400 fill-current opacity-50"
-                        : "text-gray-300"
-                }`}
+                            ? "text-yellow-400 fill-current opacity-50"
+                            : "text-gray-300"
+                    }`}
             />
         ));
     };
 
     return (
-        <div className="bg-white dark:bg-gray-900 p-6 border border-gray-200 rounded-xl max-h-[80vh] overflow-y-auto sleek-scrollbar">
+        <div className="bg-color-1 p-6 border border-gray-300 rounded-xl max-h-[70vh] overflow-y-auto sleek-scrollbar">
             {/* Header with Save Button */}
             <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-color">{job.title}</h1>
                     <div className="flex items-center gap-2 mt-1 mb-2">
-                        <p className="text-sm text-gray-500">{job.company?.companyName}</p>
+                        <p className="text-sm text-gray">{job.company?.companyName}</p>
                         {job.company?.rating && job.company.rating.count > 0 && (
                             <div className="flex items-center gap-1 text-sm">
                                 <div className="flex items-center">
                                     {renderStars(job.company.rating.average)}
                                 </div>
-                                <span className="text-gray-600">
+                                <span className="text-gray">
                                     {job.company.rating.average.toFixed(1)} ({job.company.rating.count} review{job.company.rating.count !== 1 ? 's' : ''})
                                 </span>
                             </div>
                         )}
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray">
                         {job.location?.kabupaten?.name}, {job.location?.provinsi?.name}
                     </p>
                 </div>
-                
+
                 {/* Save Button */}
                 <button
                     onClick={handleSaveToggle}
                     disabled={isSaving || (!job.canSaveMore && !job.isSaved)}
-                    className={`ml-4 p-2 rounded-full transition-colors duration-200 ${
-                        job.isSaved
+                    className={`ml-4 p-2 rounded-full transition-colors duration-200 ${job.isSaved
                             ? "bg-primary text-white hover:bg-primary-dark"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                    } ${
-                        !job.canSaveMore && !job.isSaved
+                        } ${!job.canSaveMore && !job.isSaved
                             ? "opacity-50 cursor-not-allowed"
                             : ""
-                    }`}
+                        }`}
                     title={
                         job.isSaved
                             ? "Remove from saved jobs"
                             : !job.canSaveMore
-                            ? `Saved jobs limit reached (${job.userSavedCount}/${job.maxSavedAllowed}). ${job.userSubscription === 'free' ? 'Upgrade to premium for more saves.' : ''}`
-                            : "Save this job"
+                                ? `Saved jobs limit reached (${job.userSavedCount}/${job.maxSavedAllowed}). ${job.userSubscription === 'free' ? 'Upgrade to premium for more saves.' : ''}`
+                                : "Save this job"
                     }
                 >
                     {isSaving ? (
@@ -167,8 +164,8 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
 
             {/* Salary */}
             {job.salaryRange && (
-                <p className="mb-2 text-sm text-gray-600">
-                    <strong>Salary:</strong> {job.salaryRange.currency}{" "}
+                <p className="my-4 text-gray">
+                    <strong className=" text-color">Salary:</strong> {job.salaryRange.currency}{" "}
                     {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
                 </p>
             )}
@@ -176,7 +173,7 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
             {/* Required Skills */}
             {job.requiredSkills?.length > 0 && (
                 <div className="mb-4">
-                    <strong>Skills:</strong>
+                    <strong className="text-color">Skills:</strong>
                     <ul className="flex flex-wrap gap-2 mt-1">
                         {job.requiredSkills.map((skill) => (
                             <li
@@ -194,9 +191,56 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
             {job.description && (
                 <div className="mb-4">
                     <h3 className="text-lg font-semibold text-color">Job Description</h3>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{job.description}</p>
+                    <p className="text-sm text-gray whitespace-pre-wrap">{job.description}</p>
                 </div>
             )}
+
+            {/* Company Reviews Section */}
+            {(job.latestReviews?.length ?? 0) > 0 && (
+                <div className="">
+                    <div className="flex items-center gap-2 mb-3">
+                        {/* <MessageSquare className="w-5 h-5 text-blue-600" /> */}
+                        <h3 className="text-lg font-semibold text-color">Recent Company Reviews</h3>
+                    </div>
+
+                    <div className="space-y-3">
+                        {job.latestReviews.map((review, index) => (
+                            <div
+                                key={review._id || index}
+                                className="bg-color-1 p-3 rounded-lg border border-gray-200 dark:border-gray-600"
+                            >
+                                <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center">
+                                            {renderStars(review.rating)}
+                                        </div>
+                                        {/* Optional: reviewer name if you add it later */}
+                                        {/* <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {review.reviewerName || 'Anonymous'}
+              </span> */}
+                                    </div>
+                                    <span className="text-xs text-gray-500">
+                                        {formatDate(review.createdAt)}
+                                    </span>
+                                </div>
+
+                                {review.comment && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        {review.comment}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {job.company?.rating?.count > job.latestReviews.length && (
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                            Showing {job.latestReviews.length} of {job.company.rating.count} total reviews
+                        </p>
+                    )}
+                </div>
+            )}
+
 
             {/* Company Description */}
             {job.company?.description && (

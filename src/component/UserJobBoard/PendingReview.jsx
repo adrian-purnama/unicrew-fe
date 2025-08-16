@@ -11,7 +11,7 @@ export default function PendingReview() {
 
     useEffect(() => {
         axiosInstance
-            .get("/company/pending-reviews")
+            .get("/review/pending-reviews")
             .then((res) => {setItems(res.data); console.log(res)})
             .catch((err) => {
                 console.error(err);
@@ -22,7 +22,7 @@ export default function PendingReview() {
 
     const handleReviewSubmit = async (applicationId, rating, comment) => {
         try {
-            await axiosInstance.post("/company/review", {
+            await axiosInstance.post("/review/review", {
                 applicationId,
                 rating,
                 comment,

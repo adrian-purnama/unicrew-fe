@@ -59,7 +59,7 @@ export default function JobListPanel({
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-gray-900 rounded-xl border p-6">
+            <div className="bg-color-2 rounded-xl border p-6">
                 <div className="animate-pulse space-y-4">
                     {[...Array(5)].map((_, i) => (
                         <div key={i} className="border rounded-lg p-4">
@@ -75,7 +75,7 @@ export default function JobListPanel({
 
     if (jobs.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-900 rounded-xl border p-8 text-center">
+            <div className="bg-color-2 rounded-xl border p-8 text-center">
                 <div className="text-gray-400 mb-4">
                     <svg
                         className="w-16 h-16 mx-auto"
@@ -111,30 +111,28 @@ export default function JobListPanel({
                     <div
                         key={job._id}
                         onClick={() => onSelectJob(job)}
-                        className={`p-4 cursor-pointer transition-all duration-200 relative border rounded-lg ${
-                            isSelected
+                        className={`p-4 cursor-pointer transition-all duration-200 relative border rounded-lg ${isSelected
                                 ? "bg-primary-10 border-primary shadow-sm"
-                                : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm"
-                        }`}
+                                : "bg-color-1 border-gray-300 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm"
+                            }`}
                     >
                         {/* Save Button */}
                         <button
                             onClick={(e) => handleSaveToggle(e, job)}
                             disabled={isSaving}
                             className={`absolute top-4 right-4 p-1.5 rounded-full transition-colors duration-200
-        ${
-            job.isSaved
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
-        }
+        ${job.isSaved
+                                    ? "bg-primary text-white"
+                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                                }
         ${!job.canSaveMore && !job.isSaved ? "opacity-50 cursor-help" : ""}
     `}
                             title={
                                 job.isSaved
                                     ? "Remove from saved jobs"
                                     : !job.canSaveMore
-                                    ? `Saved jobs limit reached (${job.userSavedCount}/${job.maxSavedAllowed})`
-                                    : "Save this job"
+                                        ? `Saved jobs limit reached (${job.userSavedCount}/${job.maxSavedAllowed})`
+                                        : "Save this job"
                             }
                         >
                             {isSaving ? (
@@ -157,7 +155,7 @@ export default function JobListPanel({
                                 </p>
                             </div>
 
-                            <div className="space-y-1 text-sm text-gray-500 mb-3">
+                            <div className="space-y-1 text-sm text-gray mb-3">
                                 {job.location && (
                                     <div className="flex items-center gap-1">
                                         <MapPin className="w-4 h-4 flex-shrink-0" />
@@ -187,7 +185,7 @@ export default function JobListPanel({
                             {job.matchScore !== undefined && (
                                 <div className="mb-3">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-medium text-gray-600">
+                                        <span className="text-xs font-medium text-gray">
                                             Match:
                                         </span>
                                         <div className="flex-1 bg-gray-200 rounded-full h-2">
@@ -217,7 +215,7 @@ export default function JobListPanel({
                                             </span>
                                         ))}
                                         {job.requiredSkills.length > 3 && (
-                                            <span className="text-xs text-gray-500 px-2 py-1">
+                                            <span className="text-xs text-gray px-2 py-1">
                                                 +{job.requiredSkills.length - 3} more
                                             </span>
                                         )}
@@ -225,7 +223,7 @@ export default function JobListPanel({
                                 </div>
                             )}
 
-                            <p className="text-sm text-gray-600 line-clamp-2">
+                            <p className="text-sm text-gray line-clamp-2">
                                 {job.description?.substring(0, 120)}
                                 {job.description?.length > 120 && "..."}
                             </p>

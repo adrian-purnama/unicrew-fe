@@ -15,8 +15,8 @@ export default function JobCard({ job, mode, onDelete, onToggleStatus, notificat
         try {
             setLoading(true);
             const endpoint = isActive
-                ? `/company/job/${job._id}/disable`
-                : `/company/job/${job._id}/enable`;
+                ? `/job/job/${job._id}/disable`
+                : `/job/job/${job._id}/enable`;
 
             await axiosInstance.patch(endpoint);
             setIsActive((prev) => !prev);
@@ -38,7 +38,7 @@ export default function JobCard({ job, mode, onDelete, onToggleStatus, notificat
 
     return (
         <div
-            className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 rounded-xl shadow-md hover:shadow-lg transition w-full max-w-2xl mx-auto ${
+            className={`bg-color-1 border border-gray p-6 rounded-xl shadow-md hover:shadow-lg transition w-full max-w-2xl mx-auto ${
                 isDisabled ? "opacity-50" : ""
             }`}
         >
@@ -49,7 +49,7 @@ export default function JobCard({ job, mode, onDelete, onToggleStatus, notificat
                 </span>
             </h2>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400 capitalize mt-1">
+            <p className="text-sm text-gray capitalize mt-1">
                 {job.workType}
                 {job.workType !== "remote" && job.location && (
                     <>
@@ -60,26 +60,26 @@ export default function JobCard({ job, mode, onDelete, onToggleStatus, notificat
                 )}
             </p>
 
-            <div className="mt-3 text-sm text-gray-700 dark:text-gray-300">
+            <div className="mt-3 text-sm text-gray">
                 <strong>Skills:</strong> {job.requiredSkills.map((s) => s.name || s).join(", ")}
             </div>
 
             {job.salaryRange && (
-                <p className="text-sm mt-1 text-gray-700 dark:text-gray-300">
+                <p className="text-sm mt-1 text-gray">
                     <strong>Salary:</strong> {job.salaryRange.currency}{" "}
                     {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
                 </p>
             )}
 
             {job.description && (
-                <p className="text-sm mt-2 text-gray-600 dark:text-gray-400 line-clamp-3">
+                <p className="text-sm mt-2 text-gray line-clamp-3">
                     {job.description}
                 </p>
             )}
 
             {mode === "company" && job.statusCounts && (
-                <div className="text-sm text-gray-600 flex gap-4 mt-2">
-                    <strong className="text-sm text-gray-600">Status: </strong>
+                <div className="text-sm text-gray flex gap-4 mt-2">
+                    <strong className="text-sm text-gray">Status: </strong>
                     <span className="text-amber-400 font-semibold">
                         Applied: {job.statusCounts.applied}
                     </span>
@@ -98,7 +98,7 @@ export default function JobCard({ job, mode, onDelete, onToggleStatus, notificat
                 </div>
             )}
 
-            <p className="text-sm btn-primary mt-2 cursor-pointer w-fit" onClick={handleCardClick}>
+            <p className="text-sm btn-primary mt-2 cursor-pointer w-fit font-bold text-white" onClick={handleCardClick}>
                 View Detail
             </p>
 

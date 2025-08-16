@@ -11,7 +11,7 @@ export default function AcceptedJobs({ setActiveChatRoom }) {
 
     const fetchJobs = async () => {
         try {
-            const res = await axiosInstance.get("/company/my-applications", {
+            const res = await axiosInstance.get("/applicant/my-applications", {
                 params: { status: "accepted" },
             });
             setJobs(res.data);
@@ -30,7 +30,7 @@ export default function AcceptedJobs({ setActiveChatRoom }) {
     const handleEnd = async () => {
         if (!selectedApp) return;
         try {
-            await axiosInstance.post("/company/application/end", {
+            await axiosInstance.post("/applicant/application/end", {
                 applicationId: selectedApp._id,
             });
             toast.success("Job ended successfully.");

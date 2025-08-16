@@ -83,7 +83,7 @@ export default function ChatModal({ roomId, isOpen, onClose }) {
 
     return (
         <BaseModal isOpen={isOpen} onClose={onClose} title={`Message`}>
-            <div className="h-64 overflow-y-auto border border-color p-3 rounded bg-gray-100 dark:bg-gray-800 mb-3">
+            <div className="h-64 overflow-y-auto border border-gray p-3 rounded bg-color-1 mb-3 sleek-scrollbar">
                 {Array.isArray(messages) && messages.map((msg, idx) => {
                     const isUser = msg.senderType === "user";
                     return (
@@ -120,7 +120,7 @@ export default function ChatModal({ roomId, isOpen, onClose }) {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="flex-1 border border-color rounded px-3 py-1 focus:outline-none focus:ring focus:border-blue-400 resize-none"
+                    className="flex-1 border border-gray text-color rounded px-3 py-1 focus:outline-none focus:ring focus:border-blue-400 resize-none"
                     placeholder="Type message..."
                     rows={1}
                 />

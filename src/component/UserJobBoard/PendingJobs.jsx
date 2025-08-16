@@ -19,7 +19,7 @@ export default function PendingJobs({ setActiveChatRoom }) {
 
         setLoading(true);
         axiosInstance
-            .get("/company/my-applications", {
+            .get("/applicant/my-applications", {
                 params: { status: statusFilter },
             })
             .then((res) => setJobs(res.data))
@@ -36,7 +36,7 @@ export default function PendingJobs({ setActiveChatRoom }) {
 
     const handleCancel = async (jobId) => {
         try {
-            await axiosInstance.post("/company/cancel-apply", { jobId });
+            await axiosInstance.post("/applicant/cancel-apply", { jobId });
             toast.success("Application cancelled.");
             fetchJobs(); // Refresh
         } catch (err) {

@@ -15,7 +15,7 @@ export default function SavedJobs({ onSelectJob }) {
         try {
             setLoading(true);
             const response = await axiosInstance.get(
-                `/company/saved-jobs?page=${pageNum}&limit=10`
+                `/save/saved-jobs?page=${pageNum}&limit=10`
             );
 
             // Set jobs data
@@ -144,7 +144,7 @@ export default function SavedJobs({ onSelectJob }) {
     }
 
     return (
-        <div className="bg-white dark:bg-gray-900 rounded-xl">
+        <div className="bg-color-1 rounded-xl">
             {/* Compact Header with Stats */}
             <div className="p-4">
                 <h2 className="text-xl font-bold text-color">Saved Jobs</h2>
@@ -201,7 +201,7 @@ export default function SavedJobs({ onSelectJob }) {
                 {savedJobs.length === 0 ? (
                     <div className="text-center py-12">
                         <BookmarkCheck className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                        <h3 className="text-lg font-semibold text-gray mb-2">
                             No Saved Jobs Yet
                         </h3>
                         <p className="text-gray-500 mb-4">
@@ -219,7 +219,7 @@ export default function SavedJobs({ onSelectJob }) {
                         {savedJobs.map((job) => (
                             <div
                                 key={job._id}
-                                className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
+                                className="border border-gray rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
                             >
                                 <div className="flex justify-between items-start">
                                     <div className="flex-1">
@@ -235,12 +235,12 @@ export default function SavedJobs({ onSelectJob }) {
                                                 getApplicationStatusBadge(job.applicationStatus)}
                                         </div>
 
-                                        <p className="text-gray-600 mb-2 font-medium">
+                                        <p className="text-gray mb-2 font-medium">
                                             {job.company?.companyName}
                                         </p>
 
                                         {/* Job Details */}
-                                        <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-2">
+                                        <div className="flex flex-wrap gap-4 text-sm text-gray mb-2">
                                             {job.location && (
                                                 <div className="flex items-center gap-1">
                                                     <MapPin className="w-4 h-4" />
@@ -289,7 +289,7 @@ export default function SavedJobs({ onSelectJob }) {
 
                                         {/* Job Description Preview */}
                                         {job.description && (
-                                            <p className="text-sm text-gray-600 line-clamp-2">
+                                            <p className="text-sm text-gray line-clamp-2">
                                                 {job.description.substring(0, 150)}
                                                 {job.description.length > 150 && "..."}
                                             </p>

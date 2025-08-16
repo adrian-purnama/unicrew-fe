@@ -23,7 +23,7 @@ export default function CompanyHomePage() {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get("/company/job-postings");
+      const res = await axiosInstance.get("/job/job-postings");
       setJobPosts(res.data);
       
       // Calculate stats
@@ -32,8 +32,8 @@ export default function CompanyHomePage() {
       
       setStats({
         totalJobs: res.data.length,
-        activeJobs,
-        totalApplications,
+        // activeJobs,
+        // totalApplications,
         pendingReviews: 0 // You might want to fetch this separately
       });
     } catch (err) {
@@ -46,7 +46,7 @@ export default function CompanyHomePage() {
 
   const fetchStats = async () => {
     try {
-      const reviewRes = await axiosInstance.get("/company/pending-reviews");
+      const reviewRes = await axiosInstance.get("/review/pending-reviews");
       setStats(prev => ({
         ...prev,
         pendingReviews: reviewRes.data.length
@@ -172,7 +172,7 @@ export default function CompanyHomePage() {
             subtitle="All time"
             color="primary"
           />
-          <StatCard
+          {/* <StatCard
             icon="✅"
             title="Active Jobs"
             value={stats.activeJobs}
@@ -185,7 +185,7 @@ export default function CompanyHomePage() {
             value={stats.totalApplications}
             subtitle="Total received"
             color="purple"
-          />
+          /> */}
           <StatCard
             icon="⭐"
             title="Pending Reviews"

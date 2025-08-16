@@ -1,12 +1,11 @@
-import Navigation from "../../component/Navigation";
 import Footer from "../../component/Footer";
 import { CheckCircle, User, Building2, MailCheck, Clock } from "lucide-react";
-import BlurText from "../../component/BlurText";
 import CountUp from "../../component/CountUp";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import CTAButtons from "../../component/CTAButtons";
+import Navigation from "../../component/Navigation";
+import { motion } from "framer-motion";
 
 /* ===== Canvas-based parallax circle background ===== */
 const CanvasParallaxCircles = ({ count = 30 }) => {

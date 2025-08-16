@@ -222,14 +222,16 @@ html.dark {
   @apply text-red-600 hover:underline text-sm;
 } */
 
-
-/* .sleek-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(40, 40, 40) transparent; 
+/* Sleek, minimal scrollbar */
+.sleek-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: transparent transparent; /* Firefox: thumb / track colors */
 }
 
+/* Chrome, Edge, Safari */
 .sleek-scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 .sleek-scrollbar::-webkit-scrollbar-track {
@@ -237,13 +239,16 @@ html.dark {
 }
 
 .sleek-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgb(40, 40, 40);
+  background-color: rgba(0, 0, 0, 0.15); /* Very subtle thumb */
   border-radius: 10px;
 }
 
-.sleek-scrollbar::-webkit-scrollbar-button {
-  display: none; 
-} */
+.sleek-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.25); /* Slightly darker on hover */
+}
+
+
+
 
 /* Custom glow on hover for CTA buttons */
 .cursor-glow {
@@ -283,3 +288,4 @@ html.dark {
 .animate-wobble {
   animation: wobble 8s ease-in-out infinite;
 }
+

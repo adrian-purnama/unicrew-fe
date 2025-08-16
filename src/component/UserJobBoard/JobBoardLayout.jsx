@@ -35,7 +35,7 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
 
     const handleApply = async (jobId) => {
         try {
-            const res = await axiosInstance.post("/company/apply", { jobId });
+            const res = await axiosInstance.post("/applicant/apply", { jobId });
             toast.success("✅ " + res.data.message);
 
             fetchJobs(activeTab, filters);
@@ -52,7 +52,7 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
 
     const handleSaveJob = async (jobId) => {
         try {
-            const res = await axiosInstance.post("/company/save-job", { jobId });
+            const res = await axiosInstance.post("/save/save-job", { jobId });
             toast.success("✅ " + res.data.message);
 
             // Update the job in the list to reflect the saved status
@@ -81,7 +81,7 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
 
     const handleUnsaveJob = async (jobId) => {
         try {
-            const res = await axiosInstance.delete(`/company/save-job/${jobId}`);
+            const res = await axiosInstance.delete(`/save/save-job/${jobId}`);
             toast.success("✅ " + res.data.message);
 
             // Update the job in the list to reflect the unsaved status
@@ -129,7 +129,7 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
     }, [searchInput]);
 
     return (
-        <div className="max-w-7xl mx-auto p-4 space-y-4 bg-color-1 min-h-screen">
+        <div className="max-w-7xl mx-auto p-4 space-y-4 bg-color-1 overflow-y-hidden">
             {/* Header with gradient background */}
             {/* <div className="relative mb-6">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent rounded-2xl"></div>

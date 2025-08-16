@@ -11,7 +11,7 @@ export default function BaseModal({ isOpen, onClose, title, children }) {
       <div className="fixed inset-0 flex items-center justify-center px-4">
         <Dialog.Panel
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative"
+          className="bg-color-1 rounded-xl shadow-lg max-w-md w-full p-6 relative"
         >
           {/* Close Button */}
           <button
@@ -22,7 +22,7 @@ export default function BaseModal({ isOpen, onClose, title, children }) {
           </button>
 
           {/* Title */}
-          {title && <Dialog.Title className="text-lg font-semibold mb-4">{title}</Dialog.Title>}
+          {title && <Dialog.Title className="text-color font-semibold mb-4">{title}</Dialog.Title>}
 
           {/* Content */}
           {children}

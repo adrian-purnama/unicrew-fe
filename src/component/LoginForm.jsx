@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Eye, EyeOff, Loader } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
-import axiosInstance from "../../utils/ApiHelper";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../utils/ApiHelper";
 
 export default function LoginForm({ role, title }) {
     const [email, setEmail] = useState("");

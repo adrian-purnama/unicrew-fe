@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { UserContext } from "../../utils/UserContext";
 
 const CTAButtons = () => {
   const [showRegisterOptions, setShowRegisterOptions] = useState(false);
   const containerRef = useRef(null);
 
-  // Close options on click outside
+  const { isLoggedIn } = useContext(UserContext)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -46,15 +47,19 @@ const CTAButtons = () => {
             variants={variants}
             transition={{ duration: 0.3 }}
           >
-            <button
-              type="button"
-              aria-expanded={showRegisterOptions}
-              aria-controls="register-options"
-              onClick={() => setShowRegisterOptions(true)}
-              className="px-8 py-3 bg-primary text-white font-semibold rounded-full shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/70 focus-visible:ring-offset-2 transition-transform cursor-pointer text-lg hover:bg-primary/90"
-            >
-              📝 Register
-            </button>
+
+            {!isLoggedIn && (
+
+              <button
+                type="button"
+                aria-expanded={showRegisterOptions}
+                aria-controls="register-options"
+                onClick={() => setShowRegisterOptions(true)}
+                className="px-8 py-3 bg-primary text-white font-semibold rounded-full shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/70 focus-visible:ring-offset-2 transition-transform cursor-pointer text-lg hover:bg-primary/90"
+              >
+                📝 Register
+              </button>
+            )}
 
             <Link
               to="/user"

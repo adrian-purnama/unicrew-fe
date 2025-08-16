@@ -17,6 +17,43 @@ export default function CompanyJobDetailPage() {
     const [activeChatRoom, setActiveChatRoom] = useState(null);
     const [selectedReview, setSelectedReview] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [endTarget, setEndTarget] = useState(null);
+    const [ending, setEnding] = useState(false);
+
+    const endApplication = async () => {
+        if (!endTarget?._id) return;
+        try {
+            setEnding(true);
+            const { data } = await axiosInstance.post("/applicant/application/end", {
+                applicationId: endTarget._id,
+            });
+            toast.success(data?.message || "Application marked as ended.");
+
+            // refresh applicants
+            const refreshed = await axiosInstance.get(`/applicant/job/${jobId}/applicants`);
+            setApplicants(refreshed.data);
+
+            // refresh pending reviews (so it shows up under Reviews tab)
+            try {
+                const reviewRes = await axiosInstance.get(`/review/pending-reviews`);
+                const filteredPending = reviewRes.data.filter((app) => app.job._id === jobId);
+                setPendingReviews(filteredPending);
+            } catch (e) {
+                // non-fatal
+                console.warn("Pending reviews refresh failed:", e);
+            }
+
+            setEndTarget(null);
+        } catch (err) {
+            const msg = err?.response?.data?.message || "Failed to end application";
+            toast.error(msg);
+            console.error("❌ /application/end error:", err);
+        } finally {
+            setEnding(false);
+        }
+    };
+
+
 
     useEffect(() => {
         if (!jobId) return;
@@ -25,9 +62,9 @@ export default function CompanyJobDetailPage() {
             try {
                 setLoading(true);
                 const [jobRes, appRes, reviewRes] = await Promise.all([
-                    axiosInstance.get(`/company/job/${jobId}`),
-                    axiosInstance.get(`/company/job/${jobId}/applicants`),
-                    axiosInstance.get(`/company/pending-reviews`),
+                    axiosInstance.get(`/job/job/${jobId}`),
+                    axiosInstance.get(`/applicant/job/${jobId}/applicants`),
+                    axiosInstance.get(`/review/pending-reviews`),
                 ]);
 
                 setJob(jobRes.data);
@@ -68,7 +105,7 @@ export default function CompanyJobDetailPage() {
         }
 
         try {
-            await axiosInstance.patch(`/company/job/${jobId}/applicants/status`, {
+            await axiosInstance.patch(`/applicant/job/${jobId}/applicants/status`, {
                 user: userIds,
                 status,
             });
@@ -76,7 +113,7 @@ export default function CompanyJobDetailPage() {
             setSelected([]);
             toast.success(`Successfully ${status} ${userIds.length} applicant(s)`);
 
-            const refreshed = await axiosInstance.get(`/company/job/${jobId}/applicants`);
+            const refreshed = await axiosInstance.get(`/applicant/job/${jobId}/applicants`);
             setApplicants(refreshed.data);
         } catch (err) {
             console.error(`❌ Failed to update status "${status}":`, err);
@@ -86,12 +123,12 @@ export default function CompanyJobDetailPage() {
 
     const handleReviewSubmit = async (applicationId, rating, comment) => {
         try {
-            await axiosInstance.post("/company/review", {
+            await axiosInstance.post("/review/review", {
                 applicationId,
                 rating,
                 comment,
             });
-            
+
             // Remove from pending reviews
             setPendingReviews(prev => prev.filter(item => item._id !== applicationId));
             toast.success("Review submitted successfully!");
@@ -137,9 +174,9 @@ export default function CompanyJobDetailPage() {
 
     const renderActionButtons = (app, phase) => {
         const buttonClass = "text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:shadow-md transform hover:scale-105";
-        
+
         return (
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex flex-wrap gap-2 items-center bg-color-1">
                 {phase === "applied" && (
                     <>
                         <button
@@ -156,7 +193,7 @@ export default function CompanyJobDetailPage() {
                         </button>
                     </>
                 )}
-                
+
                 {(phase === "shortListed" || phase === "accepted") && (
                     <>
                         {phase === "shortListed" && (
@@ -179,9 +216,21 @@ export default function CompanyJobDetailPage() {
                         >
                             💬 Message
                         </button>
+
+                        {/* 👉 NEW: End Job only when in Accepted */}
+                        {phase === "accepted" && (
+                            <button
+                                onClick={() => setEndTarget(app)}
+                                className={`${buttonClass} bg-orange-600 text-white hover:bg-orange-700`}
+                                title="Mark this engagement as completed"
+                            >
+                                🛑 End Job
+                            </button>
+                        )}
                     </>
                 )}
-                
+
+
                 <label className="flex items-center cursor-pointer">
                     <input
                         type="checkbox"
@@ -189,11 +238,10 @@ export default function CompanyJobDetailPage() {
                         onChange={() => toggleSelect(app.user._id)}
                         className="sr-only"
                     />
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all transform hover:scale-110 ${
-                        selected.includes(app.user._id) 
-                            ? 'bg-primary border-primary text-white' 
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all transform hover:scale-110 ${selected.includes(app.user._id)
+                            ? 'bg-primary border-primary text-white'
                             : 'border-gray hover:border-primary'
-                    }`}>
+                        }`}>
                         {selected.includes(app.user._id) && (
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -229,17 +277,15 @@ export default function CompanyJobDetailPage() {
 
                     {/* Match Score */}
                     {app.match && (
-                        <div className={`p-3 rounded-lg mb-3 ${
-                            app.match.percent >= 70
+                        <div className={`p-3 rounded-lg mb-3 ${app.match.percent >= 70
                                 ? "bg-green-50 border border-green-200"
                                 : app.match.percent >= 40
-                                ? "bg-yellow-50 border border-yellow-200"
-                                : "bg-red-50 border border-red-200"
-                        }`}>
+                                    ? "bg-yellow-50 border border-yellow-200"
+                                    : "bg-red-50 border border-red-200"
+                            }`}>
                             <div className="flex items-center gap-2 mb-2">
-                                <div className={`w-3 h-3 rounded-full ${
-                                    app.match.percent >= 70 ? "bg-green-500" : app.match.percent >= 40 ? "bg-yellow-500" : "bg-red-500"
-                                }`}></div>
+                                <div className={`w-3 h-3 rounded-full ${app.match.percent >= 70 ? "bg-green-500" : app.match.percent >= 40 ? "bg-yellow-500" : "bg-red-500"
+                                    }`}></div>
                                 <span className="text-sm font-medium">Match Score: {app.match.percent}%</span>
                             </div>
                             {Array.isArray(app.match.reasons) && app.match.reasons.length > 0 && (
@@ -351,11 +397,10 @@ export default function CompanyJobDetailPage() {
                                             onChange={() => toggleSelectAll(users.map(u => u.user._id))}
                                             className="sr-only"
                                         />
-                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all transform hover:scale-110 ${
-                                            selected.length === users.map(u => u.user._id).length
-                                                ? 'bg-primary border-primary text-white' 
+                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all transform hover:scale-110 ${selected.length === users.map(u => u.user._id).length
+                                                ? 'bg-primary border-primary text-white'
                                                 : 'border-primary hover:bg-primary-20'
-                                        }`}>
+                                            }`}>
                                             {selected.length === users.map(u => u.user._id).length && (
                                                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -366,7 +411,7 @@ export default function CompanyJobDetailPage() {
                                             Select All ({users.length})
                                         </span>
                                     </label>
-                                    
+
                                     {selected.length > 0 && (
                                         <div className="flex gap-2">
                                             <span className="text-sm text-primary py-2 font-medium">
@@ -447,7 +492,7 @@ export default function CompanyJobDetailPage() {
                     <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                     <div className="h-20 bg-gray-200 rounded"></div>
                     <div className="flex space-x-4">
-                        {[1,2,3,4,5].map(i => (
+                        {[1, 2, 3, 4, 5].map(i => (
                             <div key={i} className="h-10 bg-gray-200 rounded w-24"></div>
                         ))}
                     </div>
@@ -457,6 +502,8 @@ export default function CompanyJobDetailPage() {
     }
 
     return (
+        <div className="bg-color-1">
+
         <div className="p-6 max-w-6xl mx-auto bg-color-1 min-h-screen">
             {/* Job Header */}
             {job && (
@@ -524,20 +571,18 @@ export default function CompanyJobDetailPage() {
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
-                            className={`relative flex items-center gap-2 px-6 py-4 font-medium transition-all duration-300 whitespace-nowrap group ${
-                                activeTab === tab.key 
-                                    ? "text-primary bg-primary-20" 
+                            className={`relative flex items-center gap-2 px-6 py-4 font-medium transition-all duration-300 whitespace-nowrap group ${activeTab === tab.key
+                                    ? "text-primary bg-primary-20"
                                     : "text-gray hover:text-primary hover:bg-color-1"
-                            }`}
+                                }`}
                         >
                             <span className="text-xl group-hover:scale-125 transition-transform duration-200">{tab.icon}</span>
                             {tab.label}
                             {tab.count > 0 && (
-                                <span className={`text-xs px-2 py-1 rounded-full ${
-                                    activeTab === tab.key 
-                                        ? "bg-primary text-white" 
+                                <span className={`text-xs px-2 py-1 rounded-full ${activeTab === tab.key
+                                        ? "bg-primary text-white"
                                         : "bg-gray-200 text-gray-700"
-                                }`}>
+                                    }`}>
                                     {tab.count}
                                 </span>
                             )}
@@ -616,6 +661,52 @@ export default function CompanyJobDetailPage() {
                 isOpen={!!activeChatRoom}
                 onClose={() => setActiveChatRoom(null)}
             />
+
+            {/* End Job Confirm Modal */}
+            {endTarget && (
+                <BaseModal
+                    isOpen={true}
+                    onClose={() => !ending && setEndTarget(null)}
+                    title="Confirm End Job"
+                >
+                    <div className="space-y-6">
+                        <div className="p-4 bg-primary-20 rounded-lg border border-primary">
+                            <div className="font-semibold">
+                                {endTarget?.user?.fullName}
+                            </div>
+                            <div className="text-sm text-gray">
+                                {job?.title}
+                            </div>
+                        </div>
+
+                        <p className="text-sm text-gray">
+                            Are you sure you want to mark this application as <span className="font-semibold">ended</span>?
+                            This should be used once the work is completed.
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setEndTarget(null)}
+                                disabled={ending}
+                                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-all disabled:opacity-60"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={endApplication}
+                                disabled={ending}
+                                className="px-4 py-2 rounded-lg bg-orange-600 text-white font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-60"
+                            >
+                                {ending ? "Ending…" : "Confirm End"}
+                            </button>
+                        </div>
+                    </div>
+                </BaseModal>
+            )}
+
+        </div>
         </div>
     );
 }
@@ -651,6 +742,8 @@ function ReviewForm({ application, onSubmit, onCancel }) {
                 </div>
             </div>
 
+
+
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Rating */}
                 <div>
@@ -665,11 +758,10 @@ function ReviewForm({ application, onSubmit, onCancel }) {
                                 onClick={() => setRating(star)}
                                 onMouseEnter={() => setHoveredRating(star)}
                                 onMouseLeave={() => setHoveredRating(0)}
-                                className={`text-3xl transition-all duration-200 hover:scale-110 ${
-                                    star <= (hoveredRating || rating) 
-                                        ? "text-yellow-400" 
+                                className={`text-3xl transition-all duration-200 hover:scale-110 ${star <= (hoveredRating || rating)
+                                        ? "text-yellow-400"
                                         : "text-gray-300 hover:text-yellow-300"
-                                }`}
+                                    }`}
                             >
                                 ★
                             </button>
@@ -718,6 +810,8 @@ function ReviewForm({ application, onSubmit, onCancel }) {
                     </button>
                 </div>
             </form>
+
+
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import axiosInstance from "../../../utils/ApiHelper";
 
+
 export default function useJobData() {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ export default function useJobData() {
                 }
             });
 
-            const response = await axiosInstance.get(`/company/job-feed?${params.toString()}`);
+            const response = await axiosInstance.get(`/job/job-feed?${params.toString()}`);
             console.log(response)
             setJobs(response.data.jobs || []);
         } catch (err) {

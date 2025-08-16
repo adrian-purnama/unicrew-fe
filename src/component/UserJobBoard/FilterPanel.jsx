@@ -209,7 +209,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-4 sticky bottom-0 bg-color-2 -mx-4 px-4 pb-4">
+            <div className="flex gap-3 pt-4 sticky bottom-[-20px] bg-color-2 -mx-4 px-4 pb-4 bg-color-2">
                 <button
                     onClick={handleSubmit}
                     className="btn-primary text-white font-bold px-4 py-2.5 rounded-lg flex-1 shadow-md hover:shadow-lg transition-all"
@@ -245,7 +245,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
             </div>
 
             {/* Desktop panel */}
-            <div className="hidden lg:block bg-color-2 border-gray border rounded-lg p-5 shadow-sm">
+            <div className="hidden lg:block bg-color-2 border-gray border rounded-lg p-5 shadow-sm max-h-[70vh] overflow-y-scroll sleek-scrollbar">
                 {content}
             </div>
 

@@ -40,7 +40,7 @@ const UserHomePage = () => {
     };
 
     return (
-        <>
+        <div className="bg-color-1 min-h-[100vh]">
             <Navigation />
             <JobBoardLayout setActiveChatRoom={setActiveChatRoom} />
 
@@ -59,7 +59,7 @@ const UserHomePage = () => {
                     onClose={() => setActiveChatRoom(null)}
                 />
             )}
-        </>
+        </div>
     );
 };
 
