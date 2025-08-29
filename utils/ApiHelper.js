@@ -3,7 +3,7 @@ import qs from 'qs';
 
 const axiosInstance = axios.create({
   baseURL: 'https://unicrew-be.onrender.com',
-  // baseURL: 'http://localhost:10000',
+  // baseURL: 'http://localhost:3000',
   paramsSerializer: (params) =>
     qs.stringify(params, {
       arrayFormat: 'brackets', // formats arrays as key[]=a&key[]=b

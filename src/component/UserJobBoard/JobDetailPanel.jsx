@@ -34,22 +34,22 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
             <Star
                 key={index}
                 className={`w-4 h-4 ${index < Math.floor(rating)
-                        ? "text-yellow-400 fill-current"
-                        : index < rating
-                            ? "text-yellow-400 fill-current opacity-50"
-                            : "text-gray-300"
+                    ? "text-yellow-400 fill-current"
+                    : index < rating
+                        ? "text-yellow-400 fill-current opacity-50"
+                        : "text-gray-300"
                     }`}
             />
         ));
     };
 
     return (
-        <div className="bg-color-1 p-6 border border-gray-300 rounded-xl max-h-[70vh] overflow-y-auto sleek-scrollbar">
+        <div className="bg-color-1 p-6 border border-gray rounded-xl max-h-[70vh] overflow-y-auto sleek-scrollbar">
             {/* Header with Save Button */}
             <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-color">{job.title}</h1>
-                    <div className="flex items-center gap-2 mt-1 mb-2">
+                    <div className="flex flex-col gap-2 mt-1 mb-2">
                         <p className="text-sm text-gray">{job.company?.companyName}</p>
                         {job.company?.rating && job.company.rating.count > 0 && (
                             <div className="flex items-center gap-1 text-sm">
@@ -63,8 +63,14 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                         )}
                     </div>
                     <p className="text-sm text-gray">
-                        {job.location?.kabupaten?.name}, {job.location?.provinsi?.name}
+                        {
+                            [job?.location?.kabupaten?.name, job?.location?.provinsi?.name]
+                                .filter(Boolean)
+                                .join(", ")
+                            || "Remote"
+                        }
                     </p>
+
                 </div>
 
                 {/* Save Button */}
@@ -72,8 +78,8 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                     onClick={handleSaveToggle}
                     disabled={isSaving || (!job.canSaveMore && !job.isSaved)}
                     className={`ml-4 p-2 rounded-full transition-colors duration-200 ${job.isSaved
-                            ? "bg-primary text-white hover:bg-primary-dark"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        ? "bg-primary text-white hover:bg-primary-dark"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                         } ${!job.canSaveMore && !job.isSaved
                             ? "opacity-50 cursor-not-allowed"
                             : ""
@@ -108,45 +114,6 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                     <p className="text-yellow-700">
                         Upgrade to premium to save up to 50 jobs!
                     </p>
-                </div>
-            )}
-
-            {/* Company Reviews Section */}
-            {job.companyReviews && job.companyReviews.length > 0 && (
-                <div className="mb-6 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                        <MessageSquare className="w-5 h-5 text-blue-600" />
-                        <h3 className="text-lg font-semibold text-color">Recent Company Reviews</h3>
-                    </div>
-                    <div className="space-y-3">
-                        {job.companyReviews.map((review, index) => (
-                            <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
-                                <div className="flex items-start justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex items-center">
-                                            {renderStars(review.rating)}
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            {review.reviewerName || 'Anonymous'}
-                                        </span>
-                                    </div>
-                                    <span className="text-xs text-gray-500">
-                                        {formatDate(review.createdAt)}
-                                    </span>
-                                </div>
-                                {review.comment && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                        {review.comment}
-                                    </p>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                    {job.company?.rating?.count > job.companyReviews.length && (
-                        <p className="text-xs text-gray-500 mt-2 text-center">
-                            Showing {job.companyReviews.length} of {job.company.rating.count} total reviews
-                        </p>
-                    )}
                 </div>
             )}
 
@@ -195,6 +162,23 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                 </div>
             )}
 
+            {/* Apply Button */}
+            {!job.hasApplied && (
+                <button
+                    onClick={() => onApply(job._id)}
+                    className="mb-4 btn-primary text-white font-bold px-4 py-2 rounded flex items-center gap-2 w-full justify-center"
+                >
+                    <Send className="w-4 h-4" /> Apply
+                </button>
+            )}
+
+            {/* Already Applied Status */}
+            {job.hasApplied && (
+                <div className="mt-4 bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded text-center">
+                    <p className="font-semibold">✓ Already Applied</p>
+                </div>
+            )}
+
             {/* Company Reviews Section */}
             {(job.latestReviews?.length ?? 0) > 0 && (
                 <div className="">
@@ -214,10 +198,7 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                                         <div className="flex items-center">
                                             {renderStars(review.rating)}
                                         </div>
-                                        {/* Optional: reviewer name if you add it later */}
-                                        {/* <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {review.reviewerName || 'Anonymous'}
-              </span> */}
+
                                     </div>
                                     <span className="text-xs text-gray-500">
                                         {formatDate(review.createdAt)}
@@ -246,26 +227,51 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
             {job.company?.description && (
                 <div className="mb-4">
                     <h3 className="text-lg font-semibold text-color">About Company</h3>
-                    <p className="text-sm text-gray-600">{job.company.description}</p>
+                    <p className="text-sm text-gray">{job.company.description}</p>
                 </div>
             )}
 
-            {/* Apply Button */}
-            {!job.hasApplied && (
-                <button
-                    onClick={() => onApply(job._id)}
-                    className="mt-4 btn-primary text-white font-bold px-4 py-2 rounded flex items-center gap-2 w-full justify-center"
-                >
-                    <Send className="w-4 h-4" /> Apply
-                </button>
-            )}
 
-            {/* Already Applied Status */}
-            {job.hasApplied && (
-                <div className="mt-4 bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded text-center">
-                    <p className="font-semibold">✓ Already Applied</p>
+            {/* Company Reviews Section */}
+            {job.companyReviews && job.companyReviews.length > 0 && (
+                <div className="mb-6 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                        <MessageSquare className="w-5 h-5 color-primary" />
+                        <h3 className="text-lg font-semibold text-color">Recent Company Reviews</h3>
+                    </div>
+                    <div className="space-y-3">
+                        {job.companyReviews.map((review, index) => (
+                            <div key={index} className="bg-color-2 p-3 rounded-lg border-gray">
+                                <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center">
+                                            {renderStars(review.rating)}
+                                        </div>
+                                        <span className="text-sm font-medium text-gray">
+                                            {review.reviewerName || 'Anonymous'}
+                                        </span>
+                                    </div>
+                                    <span className="text-xs text-gray">
+                                        {formatDate(review.createdAt)}
+                                    </span>
+                                </div>
+                                {review.comment && (
+                                    <p className="text-sm text-gray leading-relaxed">
+                                        {review.comment}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    {job.company?.rating?.count > job.companyReviews.length && (
+                        <p className="text-xs text-gray mt-2 text-center">
+                            Showing {job.companyReviews.length} of {job.company.rating.count} total reviews
+                        </p>
+                    )}
                 </div>
             )}
+
+
         </div>
     );
 }

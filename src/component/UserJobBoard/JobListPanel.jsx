@@ -15,6 +15,20 @@ export default function JobListPanel({
 }) {
     const [savingJobs, setSavingJobs] = useState(new Set());
 
+    // 0–100 → bg-blue-100 … bg-blue-900
+    const BLUE_STEPS = [
+        "bg-blue-300", "bg-blue-300", "bg-blue-300", "bg-blue-400", "bg-blue-500",
+        "bg-blue-600", "bg-blue-700", "bg-blue-800", "bg-blue-900", "bg-blue-900",
+    ];
+
+    function matchBgClass(pct) {
+        const clamped = Math.max(0, Math.min(100, Number(pct) || 0));
+        // 1–10% -> 100, 11–20% -> 200, ... 91–100% -> 900
+        const bucket = Math.max(0, Math.min(9, Math.floor((clamped - 1) / 10)));
+        return BLUE_STEPS[bucket];
+    }
+
+
     const handleSaveToggle = async (e, job) => {
         e.stopPropagation(); // Prevent job selection
 
@@ -112,8 +126,8 @@ export default function JobListPanel({
                         key={job._id}
                         onClick={() => onSelectJob(job)}
                         className={`p-4 cursor-pointer transition-all duration-200 relative border rounded-lg ${isSelected
-                                ? "bg-primary-10 border-primary shadow-sm"
-                                : "bg-color-1 border-gray-300 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm"
+                            ? "bg-primary-10 border-primary shadow-sm"
+                            : "bg-color-1 border-gray hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm"
                             }`}
                     >
                         {/* Save Button */}
@@ -182,26 +196,34 @@ export default function JobListPanel({
                                 </div>
                             </div>
 
-                            {job.matchScore !== undefined && (
-                                <div className="mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-medium text-gray">
-                                            Match:
-                                        </span>
-                                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                            <div
-                                                className="bg-primary h-2 rounded-full transition-all duration-300"
-                                                style={{
-                                                    width: `${Math.min(100, job.matchScore)}%`,
-                                                }}
-                                            ></div>
+                            {job.matchScore !== undefined && (() => {
+                                const pct = Math.max(0, Math.min(100, job.matchScore || 0));
+                                return (
+                                    <div className="mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-medium text-gray">Match:</span>
+
+                                            <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                                                <div
+                                                    className={`h-2 rounded-full transition-all duration-300 ${matchBgClass(pct)}`}
+                                                    style={{ width: `${pct}%` }}
+                                                    aria-valuemin={0}
+                                                    aria-valuemax={100}
+                                                    aria-valuenow={Math.round(pct)}
+                                                    role="progressbar"
+                                                />
+                                            </div>
+
+                                            <span className="text-xs font-semibold text-primary">
+                                                {Math.round(pct)}%
+                                            </span>
                                         </div>
-                                        <span className="text-xs font-semibold text-primary">
-                                            {Math.round(job.matchScore)}%
-                                        </span>
                                     </div>
-                                </div>
-                            )}
+                                );
+                            })()}
+
+
+
 
                             {job.requiredSkills?.length > 0 && (
                                 <div className="mb-3">

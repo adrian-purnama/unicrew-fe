@@ -64,7 +64,7 @@ export default function SavedJobs({ onSelectJob }) {
     const handleRemoveSaved = async (jobId) => {
         try {
             setRemoving(jobId);
-            await axiosInstance.delete(`/company/save-job/${jobId}`);
+            await axiosInstance.delete(`/save/save-job/${jobId}`);
             toast.success("Job removed from saved list");
 
             // Remove from local state
@@ -173,7 +173,7 @@ export default function SavedJobs({ onSelectJob }) {
                 )}
 
                 {/* Compact upgrade message */}
-                {stats?.upgradeMessage && (
+                {/* {stats?.upgradeMessage && (
                     <div
                         className={`mt-3 px-3 py-2 rounded text-xs ${
                             stats.isAtLimit
@@ -184,7 +184,7 @@ export default function SavedJobs({ onSelectJob }) {
                         <span className="mr-1">💎</span>
                         {stats.upgradeMessage}
                     </div>
-                )}
+                )} */}
 
                 {/* Compact warning when near limit */}
                 {stats?.isNearLimit && !stats?.upgradeMessage && (

@@ -3,34 +3,23 @@
 /* index.css */
 @tailwind utilities;
 
-/* CSS variables */
+/* index.css (Tailwind v4) */
+@import "tailwindcss";
+
+/* Light (default) */
 :root {
-  /* Base colors */
   --color-primary: 119, 195, 229;
   --color-primary-highlight: 68, 95, 227;
 
-  /* Theme colors */
-  --color-bg-1: 255, 255, 255;     /* Main background */
-  --color-bg-2: 243, 244, 246;     /* Secondary background (cards, etc) */
-  --color-text: 40, 40, 40;           /* Main text */
-  --color-gray-text: 100 ,100 ,100 ;/* Subtle gray text */
-  --color-gray-border: 200, 200, 200; /* Light gray for borders */
-
-  /* Optional highlight */
+  --color-bg-1: 255, 255, 255;
+  --color-bg-2: 243, 244, 246;
+  --color-text: 40, 40, 40;
+  --color-gray-text: 100, 100, 100;
+  --color-gray-border: 200, 200, 200;
   --color-theme-highlight: 230, 230, 250;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-1: 30, 41, 57;
-    --color-bg-2: 16, 24, 40;
-    --color-text: 255, 255, 255;
-    --color-gray-text: 250, 250, 250;
-    --color-gray-border: 80, 80, 80;
-    --color-theme-highlight: 38, 50, 56;
-  }
-}
-
+/* Forced DARK (overrides device) */
 html.dark {
   --color-bg-1: 30, 41, 57;
   --color-bg-2: 16, 24, 40;
@@ -39,6 +28,26 @@ html.dark {
   --color-gray-border: 80, 80, 80;
   --color-theme-highlight: 38, 50, 56;
 }
+
+/* Optional: follow OS only when you opt in with .theme-system */
+@media (prefers-color-scheme: dark) {
+  html.theme-system {
+    --color-bg-1: 30, 41, 57;
+    --color-bg-2: 16, 24, 40;
+    --color-text: 255, 255, 255;
+    --color-gray-text: 180, 180, 180;
+    --color-gray-border: 80, 80, 80;
+    --color-theme-highlight: 38, 50, 56;
+  }
+}
+
+/* Use your tokens with utilities */
+.bg-color-1 { background-color: rgb(var(--color-bg-1)); }
+.bg-color-2 { background-color: rgb(var(--color-bg-2)); }
+.text-color { color: rgb(var(--color-text)); }
+.text-gray  { color: rgb(var(--color-gray-text)); }
+.border-gray{ border-color: rgb(var(--color-gray-border)); }
+
 
 
 
@@ -69,7 +78,7 @@ html.dark {
 
 /* Border */
 .border-gray {
-  border-color:rgb(var(--color-gray-border));
+  border-color:rgb(var(--color-gray-border)) !important;
 }
 
 /* Text Color */
@@ -289,3 +298,42 @@ html.dark {
   animation: wobble 8s ease-in-out infinite;
 }
 
+/* react-select theming using your CSS variables */
+.react-select__control {
+  background-color: rgb(var(--color-bg-1)) !important;
+  border-color: rgb(var(--color-gray-border)) !important;
+  color: rgb(var(--color-text)) !important;
+  box-shadow: none !important;
+}
+.react-select__control:hover {
+  border-color: rgb(var(--color-primary)) !important;
+}
+.react-select__single-value,
+.react-select__input-container input {
+  color: rgb(var(--color-text)) !important;
+}
+.react-select__placeholder {
+  color: rgb(var(--color-gray-text)) !important;
+}
+.react-select__menu {
+  background-color: rgb(var(--color-bg-1)) !important;
+  border: 1px solid rgb(var(--color-gray-border)) !important;
+  z-index: 999 !important;
+}
+.react-select__option {
+  background-color: rgb(var(--color-bg-1)) !important;
+  color: rgb(var(--color-text)) !important;
+}
+.react-select__option--is-focused {
+  background-color: rgba(var(--color-primary), 0.10) !important;
+}
+.react-select__option--is-selected {
+  background-color: rgba(var(--color-primary), 0.15) !important;
+}
+.react-select__indicator,
+.react-select__clear-indicator {
+  color: rgb(var(--color-text)) !important;
+}
+.react-select__indicator-separator {
+  background-color: rgb(var(--color-gray-border)) !important;
+}

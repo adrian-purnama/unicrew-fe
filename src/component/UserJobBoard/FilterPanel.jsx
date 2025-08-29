@@ -157,7 +157,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
             </div>
 
             {/* Location */}
-            <div className="bg-color-1 rounded-lg p-4 border border-gray">
+            {/* <div className="bg-color-1 rounded-lg p-4 border border-gray">
                 <label className="font-semibold block mb-3 text-color flex items-center gap-2">
                     <span className="w-1 h-4 bg-primary rounded-full"></span>
                     Location
@@ -166,7 +166,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
                     value={localFilters.location}
                     onChange={(location) => setLocalFilters((prev) => ({ ...prev, location }))}
                 />
-            </div>
+            </div> */}
 
             {/* Skills */}
             <div className="bg-color-1 rounded-lg p-4 border border-gray">
@@ -181,7 +181,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
             </div>
 
             {/* Industries */}
-            <div className="bg-color-1 rounded-lg p-4 border border-gray">
+            {/* <div className="bg-color-1 rounded-lg p-4 border border-gray">
                 <label className="font-semibold block mb-3 text-color flex items-center gap-2">
                     <span className="w-1 h-4 bg-primary rounded-full"></span>
                     Industries
@@ -190,7 +190,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
                     value={localFilters.industries}
                     onChange={(industries) => setLocalFilters((prev) => ({ ...prev, industries }))}
                 />
-            </div>
+            </div> */}
 
             {/* Minimum Salary */}
             <div className="bg-color-1 rounded-lg p-4 border border-gray">

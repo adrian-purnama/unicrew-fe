@@ -32,8 +32,56 @@ function App() {
         setNotifications,
         setId,
     } = useContext(UserContext);
-    const navigate = useNavigate();
-    const location = useLocation();
+
+      useEffect(() => {
+    const mql = window.matchMedia?.('(prefers-color-scheme: dark)');
+
+    const apply = () => {
+      const t = localStorage.getItem('theme') || 'system';
+      const root = document.documentElement;
+
+      root.classList.remove('dark', 'theme-system');
+
+      if (t === 'dark') {
+        root.classList.add('dark');
+      } else if (t === 'system') {
+        root.classList.add('theme-system');
+        if (mql?.matches) root.classList.add('dark');
+      }
+
+      const meta = document.querySelector('meta[name="color-scheme"]');
+      if (meta) {
+        meta.setAttribute(
+          'content',
+          (t === 'dark' || (t === 'system' && mql?.matches)) ? 'dark light' : 'light dark'
+        );
+      }
+    };
+
+    // React to OS changes only when in "system"
+    const onMQ = () => {
+      if ((localStorage.getItem('theme') || 'system') === 'system') apply();
+    };
+
+    // React to theme changes from anywhere in the app
+    const onThemeChange = () => apply();
+
+    // React to changes from other tabs/windows
+    const onStorage = (e) => {
+      if (e.key === 'theme') apply();
+    };
+
+    apply();
+    mql?.addEventListener?.('change', onMQ);
+    window.addEventListener('theme-change', onThemeChange);
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      mql?.removeEventListener?.('change', onMQ);
+      window.removeEventListener('theme-change', onThemeChange);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
 
     useEffect(() => {
         const validateToken = async () => {
@@ -48,7 +96,6 @@ function App() {
                 });
 
                 const { name, role, profilePicture, isProfileComplete, _id } = res.data;
-
                 setUsername(name);
                 setRole(role);
                 setProfilePicture(profilePicture);

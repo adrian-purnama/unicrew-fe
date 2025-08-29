@@ -9,7 +9,7 @@ export default function SearchBar({ value, onChange }) {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="Search Your Dream Job"
-                className="w-full pl-10 pr-4 py-2 rounded border border-gray-300 transition bg-color-1 text-gray"
+                className="w-full pl-10 pr-4 py-2 rounded border border-gray transition bg-color-1 text-gray"
             />
         </div>
     );

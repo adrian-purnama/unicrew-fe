@@ -121,13 +121,27 @@ const HomePage = () => {
                         className="relative z-10 max-w-3xl mx-auto space-y-6"
                     >
                         <motion.img
-                            src="https://raw.githubusercontent.com/adrian-purnama/photo-host/refs/heads/main/unicru%20photo/university-hero.png"
+                            // src="https://raw.githubusercontent.com/adrian-purnama/photo-host/refs/heads/main/unicru%20photo/university-hero.png"
+                            src="https://github.com/adrian-purnama/photo-host/blob/main/unicru%20photo/isometric%20mascot.png?raw=true"
                             alt="Unicru Hero"
                             className="m-0 w-[15rem] sm:w-[26rem] mx-auto"
                             initial={{ scale: 0.9 }}
                             animate={{ scale: 1 }}
                             transition={{ duration: 1, ease: "easeOut" }}
                         />
+
+                        {/* <motion.video
+                            src="/mascot.mp4"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="m-0 w-[15rem] sm:w-[26rem] mx-auto rounded-2xl shadow-lg"
+                            initial={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                        /> */}
+
 
                         <motion.h1
                             className="font-bold text-primary text-6xl sm:text-7xl tracking-[1rem]"
