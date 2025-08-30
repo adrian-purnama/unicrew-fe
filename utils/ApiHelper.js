@@ -2,7 +2,8 @@ import axios from 'axios';
 import qs from 'qs';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://unicrew-be.onrender.com',
+  baseURL: 'https://unikru-be.nusagitra.web.id/',
+  // baseURL: 'https://unicrew-be.onrender.com',
   // baseURL: 'http://localhost:3000',
   paramsSerializer: (params) =>
     qs.stringify(params, {
