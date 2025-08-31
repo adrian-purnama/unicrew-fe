@@ -2,9 +2,9 @@ import axios from 'axios';
 import qs from 'qs';
 
 const axiosInstance = axios.create({
-  // baseURL: 'https://unikru-be.nusagitra.web.id/',
-  baseURL: 'https://unicrew-be.onrender.com',
-  // baseURL: 'http://localhost:3000',
+  baseURL: 'https://unikru-be.nusagitra.web.id/',
+  // baseURL: 'https://unicrew-be.onrender.com',
+  // baseURL: 'http://localhost:4001',
   paramsSerializer: (params) =>
     qs.stringify(params, {
       arrayFormat: 'brackets', // formats arrays as key[]=a&key[]=b

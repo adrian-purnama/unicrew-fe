@@ -14,6 +14,9 @@ export default function JobListPanel({
     onApply,
 }) {
     const [savingJobs, setSavingJobs] = useState(new Set());
+    const [startY, setStartY] = useState(null);
+const [translateY, setTranslateY] = useState(0);
+
 
     // 0–100 → bg-blue-100 … bg-blue-900
     const BLUE_STEPS = [
@@ -273,7 +276,7 @@ export default function JobListPanel({
                         </div>
 
                         {/* Inline Expanded Job Detail (on smaller screens only) */}
-                        {isMobile && isSelected && (
+                        {/* {isMobile && isSelected && (
                             <div className="mt-4">
                                 <JobDetailPanel
                                     job={selectedJob}
@@ -282,10 +285,71 @@ export default function JobListPanel({
                                     onUnsave={() => onUnsave(job._id)}
                                 />
                             </div>
+                        )} */}
+                        {/* Mobile overlay detail (renders once, outside list items) */}
+                        {isMobile && selectedJob && (
+                            <div
+                                className="fixed inset-0 z-50 flex flex-col bg-black/10"
+                                onClick={() => onSelectJob(null)}
+                            >
+<div
+  className={`mt-auto w-full bg-color-2 rounded-t-2xl shadow-xl border
+              max-h-[85vh] overflow-y-auto sleek-scrollbar
+              transform transition-transform duration-200`}
+  style={{ transform: `translateY(${translateY}px)` }}
+  onClick={(e) => e.stopPropagation()}
+  onTouchStart={(e) => setStartY(e.touches[0].clientY)}
+  onTouchMove={(e) => {
+    if (startY !== null) {
+      const delta = e.touches[0].clientY - startY;
+      if (delta > 0) setTranslateY(delta); // only drag down
+    }
+  }}
+  onTouchEnd={() => {
+    if (translateY > 100) {
+      // if dragged far enough, close
+      onSelectJob(null);
+    }
+    setStartY(null);
+    setTranslateY(0); // reset
+  }}
+>
+  {/* drag handle */}
+  <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto my-3" />
+
+  {/* header */}
+  <div className="px-4 pb-2 flex items-center justify-between">
+    <h3 className="font-semibold text-lg text-color line-clamp-1">
+      {selectedJob?.title || "Job detail"}
+    </h3>
+    <button
+      type="button"
+      onClick={() => onSelectJob(null)}
+      className="text-sm text-primary hover:underline"
+    >
+      Close
+    </button>
+  </div>
+
+  {/* content */}
+  <div className="px-4 pb-4">
+    <JobDetailPanel
+      job={selectedJob}
+      onApply={() => onApply(selectedJob._id)}
+      onSave={() => onSave(selectedJob._id)}
+      onUnsave={() => onUnsave(selectedJob._id)}
+    />
+  </div>
+</div>
+
+                            </div>
                         )}
+
                     </div>
+
                 );
             })}
         </div>
+
     );
 }

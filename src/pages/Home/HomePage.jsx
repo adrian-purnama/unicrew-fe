@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import CTAButtons from "../../component/CTAButtons";
 import Navigation from "../../component/Navigation";
 import { motion } from "framer-motion";
+import SecretAdminGate from "../../component/SecretAdminGate";
 
 /* ===== Canvas-based parallax circle background ===== */
 const CanvasParallaxCircles = ({ count = 30 }) => {
@@ -95,6 +96,7 @@ const HomePage = () => {
     return (
         <>
             <Navigation />
+            <SecretAdminGate combo={{ altKey: true, shiftKey: true, key: "a" }} />
 
             <main className="min-h-screen bg-color-1">
                 {/* ===== HERO SECTION ===== */}

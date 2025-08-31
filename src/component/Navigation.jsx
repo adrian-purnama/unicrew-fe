@@ -19,7 +19,7 @@ export default function Navigation() {
     setNotifications,
   } = useContext(UserContext);
 
-  // theme: "light" | "dark" | "system"
+
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
   const navigate = useNavigate();
 
@@ -95,6 +95,19 @@ export default function Navigation() {
     }
   };
 
+  const handleLogoClick = () => {
+    if (isLoggedIn) {
+      // if logged in, go to role page
+      if (role) {
+        navigate(`/${role}`);
+      } else {
+        navigate("/");
+      }
+    } else {
+      navigate("/");
+    }
+  };
+
   const roleLinks = {
     user: [{ to: "/user", label: "Dashboard" }],
     company: [{ to: "/company", label: "Dashboard" }],
@@ -112,7 +125,7 @@ export default function Navigation() {
         {/* Left */}
         <div className="flex items-center space-x-4">
           <img
-            onClick={() => navigate("/")}
+            onClick={handleLogoClick}
             src="/unicru logo.png"
             alt="Unicru Logo"
             className="w-8 cursor-pointer"
@@ -166,11 +179,10 @@ export default function Navigation() {
                     notifications.map((notif) => (
                       <div
                         key={notif._id}
-                        className={`py-2 text-sm ${
-                          notif.isRead
+                        className={`py-2 text-sm ${notif.isRead
                             ? "text-gray-600"
                             : "font-medium text-blue-700 dark:text-blue-300"
-                        }`}
+                          }`}
                       >
                         {notif.message}
                         <div className="text-xs text-gray-400">

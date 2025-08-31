@@ -128,6 +128,26 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
         return () => clearTimeout(debounceRef.current);
     }, [searchInput]);
 
+// JobBoardLayout.jsx
+const handleSelectJob = (jobOrId) => {
+  // ✅ allow explicit close
+  if (jobOrId == null) {
+    setSelectedJob(null);
+    return;
+  }
+  const id = typeof jobOrId === "string" ? jobOrId : jobOrId?._id;
+  if (!id) return;
+  setSelectedJob((prev) =>
+    prev?._id === id
+      ? null
+      : typeof jobOrId === "string"
+      ? { _id: id }
+      : jobOrId
+  );
+};
+
+
+
     return (
         <div className="max-w-7xl mx-auto p-4 space-y-4 bg-color-1 overflow-y-hidden">
 
@@ -183,7 +203,7 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
                                 jobs={jobs}
                                 loading={loading}
                                 activeTab={activeTab}
-                                onSelectJob={setSelectedJob}
+                                onSelectJob={handleSelectJob} 
                                 selectedJob={selectedJob}
                                 isMobile={isNonDesktop}
                                 onSave={handleSaveJob}

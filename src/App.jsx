@@ -96,6 +96,7 @@ function App() {
                 });
 
                 const { name, role, profilePicture, isProfileComplete, _id } = res.data;
+                console.log(res.data, res.message)
                 setUsername(name);
                 setRole(role);
                 setProfilePicture(profilePicture);
@@ -109,12 +110,17 @@ function App() {
                 //     navigate(`/${role}`, { replace: true });
                 // }
 
-                const resNotif = await axiosInstance.get(
-                    "/notification/notifications?page=1&limit=20"
-                );
-                setNotifications(resNotif.data.notifications);
+                if(role != "admin"){
+
+                  const resNotif = await axiosInstance.get(
+                      "/notification/notifications?page=1&limit=20"
+                  );
+                  setNotifications(resNotif.data.notifications);
+                }
+
             } catch (err) {
-                console.warn("❌ Invalid token:", err.response?.data?.message || err.message);
+              console.log(err)
+                // console.warn("❌ Invalid token:", err.response?.data?.message || err.message);
                 localStorage.removeItem("unicru-token");
             }
         };

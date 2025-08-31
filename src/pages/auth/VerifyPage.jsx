@@ -14,6 +14,7 @@ export default function VerifyPage() {
     const token = searchParams.get("token");
     const role = searchParams.get("role");
 
+
     const handleVerify = async () => {
         try {
             setStatus("loading");
@@ -25,6 +26,7 @@ export default function VerifyPage() {
 
             localStorage.setItem("unicru-token", res.data.token);
             setStatus("success");
+            setTimeout(()=> {navigate(`/${role}`)}, 1000)
         } catch (err) {
             setStatus("error");
             setAttempts((prev) => prev + 1);
@@ -43,8 +45,8 @@ export default function VerifyPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-gray-100 dark:to-gray-900 text-text px-4">
             <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div className="hidden md:block">
-                    <img src="src\assets\icons\email verify.svg" alt="Verify" className="w-full h-auto object-contain" />
+                <div className="">
+                    <img src="https://github.com/adrian-purnama/photo-host/blob/main/unicru%20photo/verify%20email%20mascot.png?raw=true" alt="Verify" className="w-full h-auto object-contain max-w-[15rem] mx-auto" />
                 </div>
 
                 <div className="text-center space-y-6">
@@ -54,7 +56,7 @@ export default function VerifyPage() {
                             <p className="text-gray-600 dark:text-gray-300">
                                 Click below to confirm your email and activate your account.
                             </p>
-                            <button onClick={handleVerify} className="btn-primary px-6 py-2">
+                            <button onClick={handleVerify} className="btn-primary px-6 py-2 font-bold text-color">
                                 Verify Email
                             </button>
                         </>

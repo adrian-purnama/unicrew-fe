@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import Navigation from "../../component/Navigation";
 import LocationSelector from "../../component/LocationSelector";
 import BaseModal from "../../component/BaseModal";
+import { useNavigate } from "react-router-dom";
 
 const UserProfilePage = () => {
   const { profilePicture } = useContext(UserContext);
@@ -17,6 +18,8 @@ const UserProfilePage = () => {
 
   const savedHashRef = useRef("");
   const allowExitRef = useRef(false);
+
+  const navigate = useNavigate()
 
   // ---- helpers for dirty-state tracking ----
   const normalizeForm = (f) =>
@@ -366,7 +369,7 @@ const UserProfilePage = () => {
                       type="button"
                       onClick={() => {
                         if (isDirty) setShowExitModal(true);
-                        else window.history.back();
+                        else navigate("/user")
                       }}
                       className="px-4 py-2 rounded-lg border border-gray text-color hover:bg-theme-highlight"
                     >

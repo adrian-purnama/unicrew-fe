@@ -20,7 +20,10 @@ export default function LoginForm({ role, title }) {
             const res = await axiosInstance.post("/login/login", { email, password, role });
             localStorage.setItem("unicru-token", res.data.token);
             toast.success("Login successful!");
-            setTimeout(() => navigate(`/${role}`), 1000);
+            setTimeout(() => {
+                window.location.href = `/${role}`;
+            }, 1000);
+
         } catch (err) {
             toast.error(err.response?.data?.message || "Login failed");
         } finally {
