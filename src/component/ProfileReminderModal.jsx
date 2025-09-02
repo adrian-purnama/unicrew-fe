@@ -116,7 +116,7 @@ export default function ProfileReminderModal() {
                 </div>
             )}
 
-            <p className="text-black mb-4 text-center">
+            <p className="text-color mb-4 text-center">
                 You've completed <strong>{percent}%</strong> of your profile.
             </p>
 
@@ -124,7 +124,7 @@ export default function ProfileReminderModal() {
                 {fields.map((f) => {
                     const isMissing = missing.some((m) => m.key === f.key);
                     return (
-                        <li key={f.key} className="flex items-center gap-2 text-sm text-black">
+                        <li key={f.key} className="flex items-center gap-2 text-sm text-color">
                             {isMissing ? (
                                 <Cross className="text-red-500 w-4 h-4" />
                             ) : (
