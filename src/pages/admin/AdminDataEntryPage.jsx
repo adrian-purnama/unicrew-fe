@@ -201,7 +201,7 @@ export default function AdminDataEntryPage() {
     };
 
     // ❗ don't await this; use callbacks
-    fetchEventSource(`${axiosInstance.defaults.baseURL}/admin/sync-location/stream`, {
+    fetchEventSource(`${axiosInstance.defaults.baseURL}/admin/sync-location/new`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
