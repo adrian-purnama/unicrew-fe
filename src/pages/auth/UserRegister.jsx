@@ -8,6 +8,7 @@ import CustomSelect from "../../component/CustomSelect";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import DatePickerYMD from "../../component/DatePickerYMD";
 
 export default function UserRegister() {
   const navigate = useNavigate();
@@ -101,23 +102,15 @@ export default function UserRegister() {
           <>
             <Input label="Full Name" name="fullName" value={form.fullName} onChange={setForm} />
             <Input label="Email (.ac.id / .edu)" name="email" type="email" value={form.email} onChange={setForm} />
-            <DatePicker
-              selected={form.birthDate ? new Date(form.birthDate) : null}
-              onChange={(date) =>
-                setForm((prev) => ({
-                  ...prev,
-                  birthDate: date ? date.toISOString().slice(0, 10) : "",
-                }))
-              }
-              dateFormat="yyyy-MM-dd"
-              showMonthDropdown
-              showYearDropdown
-              dropdownMode="select"
-              placeholderText="Select your birth date"
-              className="w-full border border-gray bg-color-1 text-text px-4 py-2 rounded focus:outline-primary"
-              maxDate={new Date()} // cannot pick future date
+            <p className="text-color font-bold mb-1">Birthday</p>
+            <DatePickerYMD
+              value={form.birthDate || ""}
+              onChange={(iso) => setForm((prev) => ({ ...prev, birthDate: iso }))}
+              maxDate={new Date()}                               // no future dates
               minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))} // last 100 yrs
-            />            
+              placeholder="Select your birth date"
+              className="w-full"
+            />
           </>
         );
       case 2:
@@ -230,7 +223,7 @@ export default function UserRegister() {
 
           <div className="text-center text-sm">
             <a href={`/auth/user/login`} className="text-sm text-primary hover:underline">Login</a>
-            <span className="mx-2">or</span>
+            <span className="mx-2 text-color">or</span>
             <a href={`/forgot-password?role=user`} className="text-sm text-primary hover:underline">Forgot password?</a>
           </div>
         </form>

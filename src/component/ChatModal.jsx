@@ -30,7 +30,7 @@ export default function ChatModal({ roomId, isOpen, onClose }) {
                 console.error("Failed to load chat history", err);
             });
 
-        // const ws = new WebSocket(`ws://localhost:10000/ws/chat/${roomId}?token=${token}`);
+        // const ws = new WebSocket(`ws://localhost:4001/ws/chat/${roomId}?token=${token}`);
         // const ws = new WebSocket(`wss://unicrew-be.onrender.com/ws/chat/${roomId}?token=${token}`);
         const ws = new WebSocket(`wss://unikru-be.nusagitra.web.id/ws/chat/${roomId}?token=${token}`);
         socketRef.current = ws;

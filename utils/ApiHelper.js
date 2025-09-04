@@ -7,8 +7,8 @@ const axiosInstance = axios.create({
   // baseURL: 'http://localhost:4001',
   paramsSerializer: (params) =>
     qs.stringify(params, {
-      arrayFormat: 'brackets', // formats arrays as key[]=a&key[]=b
-      encode: false,           // optional: disables URL encoding
+      arrayFormat: 'brackets',
+      encode: false,
     }),
 });
 

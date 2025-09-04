@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/ApiHelper";
 import toast from "react-hot-toast";
 import { MessageCircle, X, Clock, Star, Building, MapPin } from "lucide-react";
+import { emitApplicationsUpdated } from "../../../utils/appEvent";
 
 export default function PendingJobs({ setActiveChatRoom }) {
     const [jobs, setJobs] = useState([]);
@@ -39,6 +40,7 @@ export default function PendingJobs({ setActiveChatRoom }) {
             await axiosInstance.post("/applicant/cancel-apply", { jobId });
             toast.success("Application cancelled.");
             fetchJobs(); // Refresh
+            emitApplicationsUpdated() 
         } catch (err) {
             toast.error("Failed to cancel application.");
             console.error(err);

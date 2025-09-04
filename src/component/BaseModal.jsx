@@ -14,12 +14,12 @@ export default function BaseModal({ isOpen, onClose, title, children }) {
           className="bg-color-1 rounded-xl shadow-lg max-w-md w-full p-6 relative"
         >
           {/* Close Button */}
-          <button
+          {/* <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            className="absolute top-4 right-4 text-gray"
           >
             <X className="w-5 h-5" />
-          </button>
+          </button> */}
 
           {/* Title */}
           {title && <Dialog.Title className="text-color font-semibold mb-4">{title}</Dialog.Title>}

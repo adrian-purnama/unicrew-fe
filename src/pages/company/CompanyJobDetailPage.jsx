@@ -24,13 +24,14 @@ export default function CompanyJobDetailPage() {
 
   const endApplication = async () => {
     if (!endTarget?._id) return;
+    const tId = toast.loading("Ending engagement… sending emails & updating records");
     try {
       setEnding(true);
       const { data } = await axiosInstance.post("/applicant/application/end", {
         applicationId: endTarget._id,
       });
-      toast.success(data?.message || "Application marked as ended.");
 
+      // refresh lists
       const refreshed = await axiosInstance.get(`/applicant/job/${jobId}/applicants`);
       setApplicants(refreshed.data);
 
@@ -43,10 +44,11 @@ export default function CompanyJobDetailPage() {
       }
 
       setEndTarget(null);
+      toast.success(data?.message || "Application marked as ended.", { id: tId });
     } catch (err) {
       const msg = err?.response?.data?.message || "Failed to end application";
-      toast.error(msg);
       console.error("❌ /application/end error:", err);
+      toast.error(msg, { id: tId });
     } finally {
       setEnding(false);
     }
@@ -100,6 +102,20 @@ export default function CompanyJobDetailPage() {
       return;
     }
 
+    const human =
+      status === "shortListed"
+        ? "shortlisting"
+        : status === "accepted"
+        ? "accepting"
+        : status === "rejected"
+        ? "rejecting"
+        : "updating";
+
+    // show loading toast (emails can take a while)
+    const tId = toast.loading(
+      `Processing ${human} ${userIds.length} applicant(s)… sending emails`
+    );
+
     try {
       await axiosInstance.patch(`/applicant/job/${jobId}/applicants/status`, {
         user: userIds,
@@ -107,13 +123,17 @@ export default function CompanyJobDetailPage() {
       });
 
       setSelected([]);
-      toast.success(`Successfully ${status} ${userIds.length} applicant(s)`);
-
+      // refresh
       const refreshed = await axiosInstance.get(`/applicant/job/${jobId}/applicants`);
       setApplicants(refreshed.data);
+
+      toast.success(
+        `Successfully ${status} ${userIds.length} applicant(s).`,
+        { id: tId }
+      );
     } catch (err) {
       console.error(`❌ Failed to update status "${status}":`, err);
-      toast.error(`Failed to update status to ${status}`);
+      toast.error(`Failed to update status to ${status}`, { id: tId });
     }
   };
 
@@ -423,44 +443,39 @@ export default function CompanyJobDetailPage() {
               )}
             </div>
 
-            
-{app.reviews && (
-  <div className="mb-4">
-    <div className="flex items-center justify-between mb-2">
-      <p className="text-sm font-medium text-gray">
-        Recent Reviews
-        {typeof app.reviews.rating?.average === "number" && (
-          <span className="ml-2 text-xs text-gray">
-            • Avg {app.reviews.rating.average}★ ({app.reviews.rating.count})
-          </span>
-        )}
-      </p>
-    </div>
+            {app.reviews && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray">
+                    Recent Reviews
+                    {typeof app.reviews.rating?.average === "number" && (
+                      <span className="ml-2 text-xs text-gray">
+                        • Avg {app.reviews.rating.average}★ ({app.reviews.rating.count})
+                      </span>
+                    )}
+                  </p>
+                </div>
 
-    {Array.isArray(app.reviews.recent) && app.reviews.recent.length > 0 ? (
-      <ul className="space-y-2">
-        {app.reviews.recent.map((rv) => (
-          <li key={rv._id} className="p-3 rounded-lg border border-gray bg-color-1">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-medium text-color">{rv.by}</div>
-              <div className="text-sm text-yellow-500 font-semibold">
-                {rv.rating}★
+                {Array.isArray(app.reviews.recent) && app.reviews.recent.length > 0 ? (
+                  <ul className="space-y-2">
+                    {app.reviews.recent.map((rv) => (
+                      <li key={rv._id} className="p-3 rounded-lg border border-gray bg-color-1">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium text-color">{rv.by}</div>
+                          <div className="text-sm text-yellow-500 font-semibold">{rv.rating}★</div>
+                        </div>
+                        {rv.comment && <p className="text-sm text-gray mt-1">{rv.comment}</p>}
+                        <p className="text-xs text-gray mt-1">
+                          {new Date(rv.createdAt).toLocaleDateString()}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray italic">No reviews yet.</p>
+                )}
               </div>
-            </div>
-            {rv.comment && (
-              <p className="text-sm text-gray mt-1">{rv.comment}</p>
             )}
-            <p className="text-xs text-gray mt-1">
-              {new Date(rv.createdAt).toLocaleDateString()}
-            </p>
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p className="text-sm text-gray italic">No reviews yet.</p>
-    )}
-  </div>
-)}
           </div>
 
           {/* Actions */}
@@ -520,7 +535,9 @@ export default function CompanyJobDetailPage() {
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm font-medium text-primary">Select All ({users.length})</span>
+                    <span className="text-sm font-medium text-primary">
+                      Select All ({users.length})
+                    </span>
                   </label>
 
                   {selected.length > 0 && (

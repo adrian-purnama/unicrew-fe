@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axiosInstance from "../../../utils/ApiHelper";
 import toast, { Toaster } from "react-hot-toast";
+import Navigation from "../../component/Navigation";
+import Footer from "../../component/Footer";
 
 export default function ReverifyEmailPage() {
   const [params] = useSearchParams();
@@ -16,27 +18,30 @@ export default function ReverifyEmailPage() {
     try {
       const res = await axiosInstance.post("/auth/reverify", { email, role });
       setMessage(res.data.message || "Verification email sent!");
+      toast.success("Verification email sent!");
     } catch (err) {
-      setMessage(err.response?.data?.message || "Something went wrong.");
+      const msg = err.response?.data?.message || "Something went wrong.";
+      setMessage(msg);
+      toast.error(msg);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-text px-4">
+    <>
+      <Navigation />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-gray-100 dark:to-gray-900 text-text px-4">
       <Toaster position="top-center" />
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8 w-full max-w-md space-y-6"
+        className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 w-full max-w-md space-y-6"
       >
         <h2 className="text-3xl font-bold text-center">
-          Reverify{" "}
-          <span className="text-primary">{role ? role.toUpperCase() : "Account"}</span> Email
+          <span className="text-primary">
+            Reverify
+          </span> Email
         </h2>
 
         <div>
-          <label htmlFor="email" className="block font-medium mb-1">
-            Email
-          </label>
           <input
             id="email"
             type="email"
@@ -48,18 +53,19 @@ export default function ReverifyEmailPage() {
           />
         </div>
 
-        <button
-          type="submit"
-          className="btn-primary w-full"
-          disabled={!email}
-        >
+        <button type="submit" className="btn-primary w-full font-bold text-color" disabled={!email}>
           Send Verification
         </button>
+        <p className="text-xs text-center text-gray">
+          Dont forget to chek your <span className="color-primary font-bold">Spamm</span> or <span className="color-primary font-bold">Junk</span>
+        </p>
 
         {message && (
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">{message}</p>
+          <p className="text-center text-sm text-gray-600 dark:text-gray-300">{message}</p>
         )}
       </form>
     </div>
+    <Footer />
+    </>
   );
 }

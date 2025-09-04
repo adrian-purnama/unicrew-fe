@@ -101,10 +101,10 @@ export default function FilterPanel({ filters = {}, onChange }) {
         }
     }, []);
 
-    const activeFilterCount = 
-        localFilters.workType.length + 
-        localFilters.skills.length + 
-        localFilters.industries.length + 
+    const activeFilterCount =
+        localFilters.workType.length +
+        localFilters.skills.length +
+        localFilters.industries.length +
         (localFilters.location.provinsi ? 1 : 0) +
         (localFilters.minSalary ? 1 : 0);
 
@@ -137,11 +137,10 @@ export default function FilterPanel({ filters = {}, onChange }) {
                                 onChange={() => handleWorkType(type)}
                                 className="sr-only"
                             />
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                                localFilters.workType.includes(type)
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${localFilters.workType.includes(type)
                                     ? 'bg-primary border-primary text-white'
                                     : 'border-gray group-hover:border-primary'
-                            }`}>
+                                }`}>
                                 {localFilters.workType.includes(type) && (
                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -234,7 +233,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
                     onClick={() => setIsMobileOpen(true)}
                     className="text-primary text-sm font-semibold flex items-center gap-2 px-4 py-2 border border-primary rounded-lg hover:bg-primary-20 transition-all"
                 >
-                    <Menu className="w-4 h-4" /> 
+                    <Menu className="w-4 h-4" />
                     Filters
                     {activeFilterCount > 0 && (
                         <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
@@ -251,21 +250,26 @@ export default function FilterPanel({ filters = {}, onChange }) {
 
             {/* Mobile slide-in drawer */}
             {isMobileOpen && (
-                <div className="fixed inset-0 z-50 bg-black/40 flex justify-end lg:hidden">
-                    <div className="w-full max-w-sm bg-color-2 h-full p-6 pb-0 overflow-y-auto shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
+                <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+                    {/* Overlay (click to close) */}
+                    <div
+                        className="absolute inset-0 bg-black/40"
+                        onClick={() => setIsMobileOpen(false)}
+                    />
+
+                    <div
+                        className="absolute right-0 top-0 h-full w-full max-w-sm bg-color-2 p-6 pb-0 overflow-y-auto shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="mb-6">
                             <h2 className="font-bold text-lg text-color">Filters</h2>
-                            <button 
-                                onClick={() => setIsMobileOpen(false)}
-                                className="p-2 hover:bg-color-1 rounded-lg transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
                         </div>
+
                         {content}
                     </div>
                 </div>
             )}
+
         </>
     );
 }

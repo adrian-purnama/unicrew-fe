@@ -16,9 +16,8 @@ export default function ForgotPasswordForm({ role }) {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto mt-10">
+    <div className="max-w-md mx-auto">
       <Toaster />
-      <h2 className="text-xl font-semibold mb-4">Forgot Password</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
@@ -28,7 +27,7 @@ export default function ForgotPasswordForm({ role }) {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <button className="btn-primary w-full" type="submit">
+        <button className="btn-primary w-full text-color font-bold" type="submit">
           Send Reset Link
         </button>
       </form>

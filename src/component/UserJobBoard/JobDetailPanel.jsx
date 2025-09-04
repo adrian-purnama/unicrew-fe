@@ -1,8 +1,22 @@
 import { Send, Bookmark, BookmarkCheck, Star, MessageSquare } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { UserContext } from "../../../utils/UserContext";
+import LoginForm from "../LoginForm";
+import BaseModal from "../BaseModal";
 
 export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
+    const { isLoggedIn } = useContext(UserContext)
     const [isSaving, setIsSaving] = useState(false);
+
+    const [showLogin, setShowLogin] = useState(false);
+
+    const handleApplyClick = () => {
+        if (!isLoggedIn) {
+            setShowLogin(true);
+            return;
+        }
+        if (!job.hasApplied) onApply(job._id);
+    };
 
     if (!job) return <p className="text-gray-400">Select a job to view details</p>;
 
@@ -154,30 +168,33 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                 </div>
             )}
 
-            {/* Job Description */}
-            {job.description && (
-                <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-color">Job Description</h3>
-                    <p className="text-sm text-gray whitespace-pre-wrap">{job.description}</p>
-                </div>
-            )}
+            {isLoggedIn ? (
+                <>
+                    {!job.hasApplied && (
+                        <button
+                            onClick={handleApplyClick}
+                            className="mb-4 btn-primary text-white font-bold px-4 py-2 rounded flex items-center gap-2 w-full justify-center"
+                        >
+                            <Send className="w-4 h-4" /> Apply
+                        </button>
+                    )}
 
-            {/* Apply Button */}
-            {!job.hasApplied && (
+                    {job.hasApplied && (
+                        <div className="mt-4 bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded text-center">
+                            <p className="font-semibold">✓ Already Applied</p>
+                        </div>
+                    )}
+                </>
+            ) : (
+                // Logged out → show the same Apply button, but it opens the login modal
                 <button
-                    onClick={() => onApply(job._id)}
+                    onClick={handleApplyClick}
                     className="mb-4 btn-primary text-white font-bold px-4 py-2 rounded flex items-center gap-2 w-full justify-center"
                 >
                     <Send className="w-4 h-4" /> Apply
                 </button>
             )}
 
-            {/* Already Applied Status */}
-            {job.hasApplied && (
-                <div className="mt-4 bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded text-center">
-                    <p className="font-semibold">✓ Already Applied</p>
-                </div>
-            )}
 
             {/* Company Reviews Section */}
             {(job.latestReviews?.length ?? 0) > 0 && (
@@ -271,6 +288,12 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                 </div>
             )}
 
+            <BaseModal
+                isOpen={showLogin}
+                onClose={() => setShowLogin(false)}   
+                         >
+                <LoginForm role="user" title="User" />
+            </BaseModal>
 
         </div>
     );

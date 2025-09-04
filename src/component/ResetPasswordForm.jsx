@@ -46,9 +46,8 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto mt-10 text-text">
+    <div className="max-w-md mx-auto text-text">
       <Toaster />
-      <h2 className="text-2xl font-semibold mb-4 text-center">Reset Password</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* New Password */}
         <div>
@@ -115,7 +114,7 @@ export default function ResetPasswordForm() {
         </div>
 
         <button
-          className="btn-primary w-full mt-4"
+          className="btn-primary w-full mt-4 text-color font-bold"
           type="submit"
           disabled={!isValid}
         >
