@@ -46,16 +46,15 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto text-text">
+    <div className="max-w-md mx-auto">
       <Toaster />
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* New Password */}
-        <div>
+        <div className="text-color">
           <label className="block font-medium mb-1">New Password</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              className="w-full border rounded px-4 py-2 pr-10"
+              className="w-full border-gray border rounded px-4 py-2 pr-10"
               placeholder="Enter new password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -73,11 +72,11 @@ export default function ResetPasswordForm() {
 
         {/* Verify Password */}
         <div>
-          <label className="block font-medium mb-1">Verify Password</label>
+          <label className="block font-medium mb-1 text-color">Verify Password</label>
           <div className="relative">
             <input
               type={showVerify ? "text" : "password"}
-              className="w-full border rounded px-4 py-2 pr-10"
+              className="w-full border border-gray text-color rounded px-4 py-2 pr-10"
               placeholder="Re-type your password"
               value={verifyPassword}
               onChange={(e) => setVerifyPassword(e.target.value)}

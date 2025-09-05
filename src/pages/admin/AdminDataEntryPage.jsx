@@ -3,28 +3,138 @@ import toast from "react-hot-toast";
 import axiosInstance from "../../../utils/ApiHelper";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
+/** Mini helpers */
+const Confirm = (msg) => window.confirm(msg);
+const cls = (...a) => a.filter(Boolean).join(" ");
+const Pill = ({ children, className }) => (
+  <span
+    className={cls(
+      "inline-flex items-center rounded-full px-2 py-[2px] text-xs border",
+      "bg-color-1 text-color border-gray",
+      className
+    )}
+  >
+    {children}
+  </span>
+);
+
+/** -------- Hoisted: Reusable inline editable row (now top-level) -------- */
+function EditableRow({ item, onSave, onDelete, rightNode, placeholder = "Name" }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(item.name || "");
+  return (
+    <li className="flex items-center justify-between gap-3 border-b border-gray py-2">
+      <div className="flex items-center gap-3 min-w-0">
+        {editing ? (
+          <input
+            className="w-full max-w-xs rounded border border-gray bg-color-1 text-color px-2 py-1"
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            placeholder={placeholder}
+          />
+        ) : (
+          <span className="truncate">{item.name}</span>
+        )}
+        {rightNode}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {editing ? (
+          <>
+            <button
+              className="px-2 py-1 rounded border border-gray bg-color-2"
+              onClick={async () => {
+                await onSave(val);
+                setEditing(false);
+              }}
+            >
+              Save
+            </button>
+            <button
+              className="px-2 py-1 rounded border border-gray"
+              onClick={() => {
+                setVal(item.name || "");
+                setEditing(false);
+              }}
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="px-2 py-1 rounded border border-gray" onClick={() => setEditing(true)}>
+              Edit
+            </button>
+            <button className="px-2 py-1 rounded border border-gray text-red-600" onClick={onDelete}>
+              Delete
+            </button>
+          </>
+        )}
+      </div>
+    </li>
+  );
+}
+
 export default function AdminDataEntryPage() {
-  const [provinsiList, setProvinsiList] = useState([]);
-  const [kabupatenList, setKabupatenList] = useState([]);
-  const [kecamatanList, setKecamatanList] = useState([]);
+  const [active, setActive] = useState("location"); // location | skills | industries | study | universities
 
-  const [industryList, setIndustryList] = useState([]);
-  const [skillList, setSkillList] = useState([]);
-  const [universityList, setUniversityList] = useState([]);
-  const [studyProgramList, setStudyProgramList] = useState([]);
+  // ---------- Shared state ----------
+  const [studyPrograms, setStudyPrograms] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [industries, setIndustries] = useState([]);
+  const [universities, setUniversities] = useState([]);
 
-  const [industryName, setIndustryName] = useState("");
-  const [skillName, setSkillName] = useState("");
-  const [studyProgramName, setStudyProgramName] = useState("");
+  // Location data
+  const [provinsi, setProvinsi] = useState([]);
+  const [kabupaten, setKabupaten] = useState([]);
+  const [kecamatan, setKecamatan] = useState([]);
+  const [selectedProvinsiId, setSelectedProvinsiId] = useState("");
+  const [selectedKabupatenId, setSelectedKabupatenId] = useState("");
 
-  const [universityName, setUniversityName] = useState("");
-  const [selectedSpecialities, setSelectedSpecialities] = useState([]);
+  // ---------- Fetch bootstrap ----------
+  useEffect(() => {
+    Promise.all([fetchProvinsi(), fetchSkills(), fetchIndustries(), fetchUniversities(), fetchStudyPrograms()]).catch(() => {});
+  }, []);
 
-  const [locationLevel, setLocationLevel] = useState("provinsi");
-  const [selectedProvinsi, setSelectedProvinsi] = useState("");
-  const [selectedKabupaten, setSelectedKabupaten] = useState("");
-  const [locationName, setLocationName] = useState("");
+  // ---------- API fetchers ----------
+  async function fetchProvinsi() {
+    const { data } = await axiosInstance.get("/admin/provinsi");
+    setProvinsi(data || []);
+  }
+  async function fetchKabupaten(provId) {
+    const { data } = await axiosInstance.get(`/admin/kabupaten?provinsi=${provId}`);
+    setKabupaten(data || []);
+  }
+  async function fetchKecamatan(kabId) {
+    const { data } = await axiosInstance.get(`/admin/kecamatan?kabupaten=${kabId}`);
+    setKecamatan(data || []);
+  }
 
+  async function fetchSkills() {
+    const { data } = await axiosInstance.get("/admin/skill");
+    setSkills(data || []);
+  }
+  async function fetchIndustries() {
+    const { data } = await axiosInstance.get("/admin/industry");
+    setIndustries(data || []);
+  }
+  async function fetchUniversities() {
+    const { data } = await axiosInstance.get("/admin/university");
+    setUniversities(data || []);
+  }
+  async function fetchStudyPrograms() {
+    const { data } = await axiosInstance.get("/admin/study-program");
+    setStudyPrograms(data || []);
+  }
+
+  // keep cascades in sync
+  useEffect(() => {
+    if (selectedProvinsiId) fetchKabupaten(selectedProvinsiId);
+  }, [selectedProvinsiId]);
+  useEffect(() => {
+    if (selectedKabupatenId) fetchKecamatan(selectedKabupatenId);
+  }, [selectedKabupatenId]);
+
+  // ---------- LOCATION: sync via SSE ----------
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState("Idle");
   const [syncData, setSyncData] = useState({
@@ -35,393 +145,638 @@ export default function AdminDataEntryPage() {
   const controllerRef = useRef(null);
   const finishedRef = useRef(false);
 
-  useEffect(() => {
-    fetchAll();
-  }, []);
-
-  useEffect(() => {
-    if (selectedProvinsi) fetchKabupaten(selectedProvinsi);
-  }, [selectedProvinsi]);
-
-  useEffect(() => {
-    if (selectedKabupaten) fetchKecamatan(selectedKabupaten);
-  }, [selectedKabupaten]);
-
-  const fetchAll = async () => {
-    await Promise.all([
-      fetchProvinsi(),
-      fetchIndustries(),
-      fetchSkills(),
-      fetchUniversities(),
-      fetchStudyPrograms(),
-    ]);
-  };
-
-  const fetchProvinsi = async () => {
-    const res = await axiosInstance.get("/admin/provinsi");
-    setProvinsiList(res.data);
-  };
-
-  const fetchKabupaten = async (provinsiId) => {
-    const res = await axiosInstance.get(`/admin/kabupaten?provinsi=${provinsiId}`);
-    setKabupatenList(res.data);
-  };
-
-  const fetchKecamatan = async (kabupatenId) => {
-    const res = await axiosInstance.get(`/admin/kecamatan?kabupaten=${kabupatenId}`);
-    setKecamatanList(res.data);
-  };
-
-  const fetchIndustries = async () => {
-    const res = await axiosInstance.get("/admin/industry");
-    setIndustryList(res.data);
-  };
-
-  const fetchSkills = async () => {
-    const res = await axiosInstance.get("/admin/skill");
-    setSkillList(res.data);
-  };
-
-  const fetchUniversities = async () => {
-    const res = await axiosInstance.get("/admin/university");
-    setUniversityList(res.data);
-  };
-
-  const fetchStudyPrograms = async () => {
-    const res = await axiosInstance.get("/admin/study-program");
-    setStudyProgramList(res.data);
-  };
-
-  const handleAdd = async (type, value, endpoint) => {
-    if (!value) return toast.error(`${type} cannot be empty`);
-    try {
-      await axiosInstance.post(endpoint, { name: value });
-      toast.success(`${type} added`);
-      if (type === "Industry") {
-        setIndustryName("");
-        fetchIndustries();
-      } else if (type === "Skill") {
-        setSkillName("");
-        fetchSkills();
-      } else if (type === "Study Program") {
-        setStudyProgramName("");
-        fetchStudyPrograms();
-      }
-    } catch {
-      toast.error(`Failed to add ${type}`);
-    }
-  };
-
-  const handleDelete = async (type, id) => {
-    try {
-      await axiosInstance.delete(`/admin/${type}/${id}`);
-      toast.success(`${type} deleted`);
-      fetchAll();
-    } catch {
-      toast.error(`Failed to delete ${type}`);
-    }
-  };
-
-  const handleUniversitySubmit = async () => {
-    try {
-      await axiosInstance.post("/admin/university", {
-        name: universityName,
-        speciality: selectedSpecialities,
-      });
-      toast.success("University added");
-      setUniversityName("");
-      setSelectedSpecialities([]);
-      fetchUniversities();
-    } catch {
-      toast.error("Failed to add university");
-    }
-  };
-
-  const handleLocationSubmit = async () => {
-    try {
-      let endpoint = "";
-      let payload = { name: locationName };
-
-      if (locationLevel === "provinsi") endpoint = "/admin/provinsi";
-      if (locationLevel === "kabupaten") {
-        endpoint = "/admin/kabupaten";
-        payload.provinsi = selectedProvinsi;
-      }
-      if (locationLevel === "kecamatan") {
-        endpoint = "/admin/kecamatan";
-        payload.kabupaten = selectedKabupaten;
-      }
-
-      await axiosInstance.post(endpoint, payload);
-      toast.success("Location added!");
-      setLocationName("");
-
-      if (locationLevel === "provinsi") fetchProvinsi();
-      if (locationLevel === "kabupaten") fetchKabupaten(selectedProvinsi);
-      if (locationLevel === "kecamatan") fetchKecamatan(selectedKabupaten);
-    } catch {
-      toast.error("Failed to add location");
-    }
-  };
-
-  // --- NEW: compute % (when totals known)
   const percent = useMemo(() => {
     const t = syncData.totals?.provinsi || 0;
     const d = syncData.done?.provinsi || 0;
     return t ? Math.floor((d / t) * 100) : 0;
   }, [syncData]);
 
-
   const handleSync = () => {
-    if (syncing) return;
-    setSyncing(true);
-    finishedRef.current = false;
+  if (syncing) return;
+  setSyncing(true);
+  finishedRef.current = false;
 
-    setSyncStatus("Starting…");
-    setSyncData({
-      totals: { provinsi: 0, kabupaten: 0, kecamatan: 0 },
-      done: { provinsi: 0, kabupaten: 0, kecamatan: 0 },
-      added: { provinsi: 0, kabupaten: 0, kecamatan: 0 },
-    });
+  setSyncStatus("Starting…");
+  setSyncData({
+    totals: { provinsi: 0, kabupaten: 0, kecamatan: 0 },
+    done: { provinsi: 0, kabupaten: 0, kecamatan: 0 },
+    added: { provinsi: 0, kabupaten: 0, kecamatan: 0 },
+  });
 
-    const controller = new AbortController();
-    controllerRef.current = controller;
+  const controller = new AbortController();
+  controllerRef.current = controller;
 
-    const token = localStorage.getItem("unicru-token");
-    toast.loading("Syncing locations…", { id: "sync" });
+  const token = localStorage.getItem("unicru-token");
+  toast.loading("Syncing locations…", { id: "sync" });
 
-    const finish = (ok) => {
-      if (finishedRef.current) return;
-      finishedRef.current = true;
-      setSyncing(false);
-      if (ok) fetchProvinsi();
-      // ensure we stop the stream
-      try { controllerRef.current?.abort(); } catch { }
-      controllerRef.current = null;
-    };
-
-    // ❗ don't await this; use callbacks
-    fetchEventSource(`${axiosInstance.defaults.baseURL}admin/sync-location/new`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'text/event-stream',
-      },
-      signal: controller.signal,
-      retry: 0, // ✅ no auto-retry; prevents 404 after close
-      onopen(res) {
-        if (res.ok) return;
-        throw new Error(`SSE open failed: ${res.status}`);
-      },
-      onmessage(msg) {
-        const { event, data } = msg;
-        if (!data) return;
-        const payload = JSON.parse(data);
-
-        switch (event) {
-          case 'start':
-            setSyncStatus('Initializing…');
-            break;
-
-          case 'totals':
-            if (payload.totals) {
-              setSyncData((p) => ({ ...p, totals: payload.totals }));
-            }
-            break;
-
-          case 'status':
-            if (payload.level && payload.name) {
-              setSyncStatus(`${payload.level}: ${payload.name}`);
-            }
-            break;
-
-          case 'progress':
-            if (payload.done && payload.totals) {
-              setSyncData({
-                totals: payload.totals,
-                done: payload.done,
-                added: payload.added || { provinsi: 0, kabupaten: 0, kecamatan: 0 },
-              });
-            }
-            break;
-
-          case 'done':
-            toast.success(
-              `Sync complete. Added P:${payload?.added?.provinsi || 0} KAB:${payload?.added?.kabupaten || 0} KEC:${payload?.added?.kecamatan || 0}`,
-              { id: "sync" }
-            );
-            setSyncStatus('Completed');
-            finish(true);
-            break;
-
-          case 'error':
-            toast.error(payload?.message || 'Sync failed', { id: 'sync' });
-            setSyncStatus('Failed');
-            finish(false);
-            break;
-
-          case 'ping': // optional heartbeat support
-            // console.debug('ping', payload);
-            break;
-
-          default:
-            // console.debug('unknown event', event, payload);
-            break;
-        }
-      },
-      onerror(err) {
-        // ignore expected AbortError after we abort on done/error
-        if (err?.name === 'AbortError') return;
-        // browsers sometimes throw TypeError: "The signal is aborted"
-        if (String(err?.message || '').toLowerCase().includes('aborted')) return;
-
-        toast.error('Stream error. Aborting.', { id: 'sync' });
-        setSyncStatus('Failed');
-        finish(false);
-      },
-    });
+  const finish = (ok) => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    setSyncing(false);
+    if (ok) fetchProvinsi();
+    try { controllerRef.current?.abort(); } catch {}
+    controllerRef.current = null;
   };
+
+  // Build the SSE URL safely (avoids missing/double slashes)
+  const sseUrl = new URL("admin/sync-location/new", axiosInstance.defaults.baseURL).toString();
+
+  fetchEventSource(sseUrl, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "text/event-stream",
+    },
+    signal: controller.signal,
+    retry: 0,
+    onopen(res) {
+      if (res.ok) return;
+      throw new Error(`SSE open failed: ${res.status}`);
+    },
+    onmessage(msg) {
+      const { event, data } = msg;
+      if (!data) return;
+      const payload = JSON.parse(data);
+
+      switch (event) {
+        case "start":
+          setSyncStatus("Initializing…");
+          break;
+
+        case "totals":
+          if (payload.totals) {
+            setSyncData((p) => ({ ...p, totals: payload.totals })); // <-- fixed spread
+          }
+          break;
+
+        case "status":
+          if (payload.level && payload.name) {
+            setSyncStatus(`${payload.level}: ${payload.name}`);
+          }
+          break;
+
+        case "progress":
+          if (payload.done && payload.totals) {
+            setSyncData({
+              totals: payload.totals,
+              done: payload.done,
+              added: payload.added || { provinsi: 0, kabupaten: 0, kecamatan: 0 },
+            });
+          }
+          break;
+
+        case "done":
+          toast.success(
+            `Sync complete. Added P:${payload?.added?.provinsi || 0} ` +
+              `KAB:${payload?.added?.kabupaten || 0} KEC:${payload?.added?.kecamatan || 0}`,
+            { id: "sync" }
+          );
+          setSyncStatus("Completed");
+          finish(true);
+          break;
+
+        case "error":
+          toast.error(payload?.message || "Sync failed", { id: "sync" });
+          setSyncStatus("Failed");
+          finish(false);
+          break;
+
+        // optional heartbeats
+        case "ping":
+        default:
+          break;
+      }
+    },
+    onerror(err) {
+      if (err?.name === "AbortError") return;
+      if (String(err?.message || "").toLowerCase().includes("aborted")) return;
+      toast.error("Stream error. Aborting.", { id: "sync" });
+      setSyncStatus("Failed");
+      finish(false);
+    },
+  });
+};
+
   useEffect(() => {
     return () => {
-      try { controllerRef.current?.abort(); } catch { }
+      try {
+        controllerRef.current?.abort();
+      } catch {}
       controllerRef.current = null;
     };
   }, []);
 
+  // ---------- Mutations (inline) ----------
+  async function addSimple(endpoint, name, extra = {}) {
+    if (!name?.trim()) return toast.error("Name cannot be empty");
+    await axiosInstance.post(endpoint, { name: name.trim(), ...extra });
+    toast.success("Added");
+  }
+  async function updateSimple(endpoint, id, name, extra = {}) {
+    if (!name?.trim()) return toast.error("Name cannot be empty");
+    await axiosInstance.put(`${endpoint}/${id}`, { name: name.trim(), ...extra });
+    toast.success("Updated");
+  }
+  async function deleteSimple(endpoint, id, label = "item") {
+    if (!Confirm(`Delete ${label}? This cannot be undone.`)) return;
+    await axiosInstance.delete(`${endpoint}/${id}`);
+    toast.success("Deleted");
+  }
+
+  // ---------- Tabs ----------
+  const tabs = [
+    { key: "location", label: "Location" },
+    { key: "skills", label: "Skills" },
+    { key: "industries", label: "Industries" },
+    { key: "study", label: "Study Programs" },
+    { key: "universities", label: "Universities" },
+  ];
+
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-10">
-      <h1 className="text-2xl font-bold text-center">Admin Data Entry</h1>
+    <div className="mx-auto max-w-6xl p-6 space-y-8">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Admin Data Entry</h1>
+        <nav className="flex flex-wrap gap-2">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setActive(t.key)}
+              className={cls(
+                "px-3 py-1.5 rounded-lg border",
+                active === t.key ? "bg-primary text-white border-primary" : "bg-color-2 border-gray"
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </header>
 
-      <div className="space-y-2">
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className="bg-yellow-500 text-white px-4 py-2 rounded disabled:opacity-60"
-        >
-          {syncing ? "Syncing..." : "🔄 Sync Location Data"}
-        </button>
-
-        {syncing && (
-          <div className="bg-color-2 border rounded p-3">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-600">Progress</span>
-              <span className="font-semibold">{percent}%</span>
+      {/* LOCATION TAB */}
+      {active === "location" && (
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* sync card */}
+          <div className="space-y-4 border border-gray rounded-xl p-4 bg-color-2">
+            <h2 className="text-lg font-semibold">Sync Indonesia Location</h2>
+            <p className="text-sm text-gray">
+              Pulls Provinsi → Kabupaten → Kecamatan from the public dataset, streaming progress via SSE.
+            </p>
+            <div className="flex items-center gap-2">
+              <button onClick={handleSync} disabled={syncing} className="btn-primary text-white px-4 py-2 rounded">
+                {syncing ? "Syncing…" : "🔄 Start Sync"}
+              </button>
+              <span className="text-sm text-gray">{syncStatus}</span>
             </div>
-            <div className="w-full h-2 bg-gray-200 rounded overflow-hidden">
-              <div
-                className="h-2 bg-primary transition-all"
-                style={{ width: `${percent}%` }}
-              />
-            </div>
-            <div className="text-xs text-gray-500 mt-2">
-              {syncStatus}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              P: {syncData.done.provinsi}/{syncData.totals.provinsi} &nbsp;·&nbsp;
-              KAB: {syncData.done.kabupaten}/{syncData.totals.kabupaten} &nbsp;·&nbsp;
-              KEC: {syncData.done.kecamatan}/{syncData.totals.kecamatan}
-            </div>
+            {syncing && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span>Progress</span>
+                  <span>{percent}%</span>
+                </div>
+                <div className="h-2 w-full rounded bg-gray-200 overflow-hidden">
+                  <div className="h-2 bg-primary transition-all" style={{ width: `${percent}%` }} />
+                </div>
+                <div className="text-xs text-gray">
+                  P: {syncData.done.provinsi}/{syncData.totals.provinsi} ·&nbsp;KAB: {syncData.done.kabupaten}/{syncData.totals.kabupaten} ·&nbsp;KEC: {syncData.done.kecamatan}/{syncData.totals.kecamatan}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* add/location card */}
+          <div className="space-y-4 border border-gray rounded-xl p-4 bg-color-2">
+            <h2 className="text-lg font-semibold">Add Location</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm">Provinsi</label>
+                <select
+                  className="w-full rounded border border-gray bg-color-1 text-color px-2 py-2"
+                  value={selectedProvinsiId}
+                  onChange={(e) => setSelectedProvinsiId(e.target.value)}
+                >
+                  <option value="">— Select —</option>
+                  {provinsi.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm">Kabupaten</label>
+                <select
+                  className="w-full rounded border border-gray bg-color-1 text-color px-2 py-2"
+                  value={selectedKabupatenId}
+                  onChange={(e) => setSelectedKabupatenId(e.target.value)}
+                  disabled={!selectedProvinsiId}
+                >
+                  <option value="">— Select —</option>
+                  {kabupaten.map((k) => (
+                    <option key={k._id} value={k._id}>
+                      {k.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <AddLocationBlocks
+              provinsi={provinsi}
+              kabupaten={kabupaten}
+              kecamatan={kecamatan}
+              selectedProvinsiId={selectedProvinsiId}
+              selectedKabupatenId={selectedKabupatenId}
+              onAdded={() => {
+                if (selectedProvinsiId) fetchKabupaten(selectedProvinsiId);
+                if (selectedKabupatenId) fetchKecamatan(selectedKabupatenId);
+                fetchProvinsi();
+              }}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* SKILLS TAB */}
+      {active === "skills" && (
+        <SimpleCrudCard
+          title="Skills"
+          subtitle="Track reusable skills; users can also propose new ones."
+          items={skills}
+          columns={[
+            { key: "name", label: "Name", width: "w-full" },
+            { key: "usageCount", label: "Usage", render: (v) => <Pill>{v || 0}</Pill> },
+          ]}
+          onAdd={async (name) => {
+            await addSimple("/admin/skill", name);
+            await fetchSkills();
+          }}
+          onUpdate={async (id, name) => {
+            await updateSimple("/admin/skill", id, name);
+            await fetchSkills();
+          }}
+          onDelete={async (id) => {
+            await deleteSimple("/admin/skill", id, "skill");
+            await fetchSkills();
+          }}
+          serverSearchEndpoint="/admin/skill/search"
+          searchResultMap={(list) => list}
+        />
+      )}
+
+      {/* INDUSTRIES TAB */}
+      {active === "industries" && (
+        <SimpleCrudCard
+          title="Industries"
+          subtitle="Classify companies and jobs by industry."
+          items={industries}
+          columns={[{ key: "name", label: "Name", width: "w-full" }]}
+          onAdd={async (name) => {
+            await addSimple("/admin/industry", name);
+            await fetchIndustries();
+          }}
+          onUpdate={async (id, name) => {
+            await updateSimple("/admin/industry", id, name);
+            await fetchIndustries();
+          }}
+          onDelete={async (id) => {
+            await deleteSimple("/admin/industry", id, "industry");
+            await fetchIndustries();
+          }}
+          serverSearchEndpoint="/admin/industry/search"
+          searchResultMap={(list) => list}
+        />
+      )}
+
+      {/* STUDY PROGRAM TAB */}
+      {active === "study" && (
+        <SimpleCrudCard
+          title="Study Programs"
+          subtitle="Manage study programs that universities can reference."
+          items={studyPrograms}
+          columns={[{ key: "name", label: "Name", width: "w-full" }]}
+          onAdd={async (name) => {
+            await addSimple("/admin/study-program", name);
+            await fetchStudyPrograms();
+          }}
+          onUpdate={async (id, name) => {
+            await updateSimple("/admin/study-program", id, name);
+            await fetchStudyPrograms();
+          }}
+          onDelete={async (id) => {
+            await deleteSimple("/admin/study-program", id, "study-program");
+            await fetchStudyPrograms();
+          }}
+        />
+      )}
+
+      {/* UNIVERSITIES TAB */}
+      {active === "universities" && (
+        <UniversitiesCard
+          universities={universities}
+          studyPrograms={studyPrograms}
+          onAdded={fetchUniversities}
+          onDeleted={async (id) => {
+            await deleteSimple("/admin/university", id, "university");
+            await fetchUniversities();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/** -------- Reusable CRUD card with search + inline edit -------- */
+function SimpleCrudCard({
+  title,
+  subtitle,
+  items,
+  columns,
+  onAdd,
+  onUpdate,
+  onDelete,
+  serverSearchEndpoint,
+  searchResultMap,
+}) {
+  const [q, setQ] = useState("");
+  const [list, setList] = useState(items || []);
+  const [newName, setNewName] = useState("");
+  const [loadingSearch, setLoadingSearch] = useState(false);
+
+  useEffect(() => setList(items || []), [items]);
+
+  const clientFiltered = useMemo(() => {
+    if (!q.trim() || serverSearchEndpoint) return list;
+    const r = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    return (list || []).filter((x) => r.test(x?.name || ""));
+  }, [q, list, serverSearchEndpoint]);
+
+  async function runServerSearch() {
+    if (!serverSearchEndpoint) return;
+    setLoadingSearch(true);
+    try {
+      const { data } = await axiosInstance.get(serverSearchEndpoint, {
+        params: { q: q.trim() },
+      });
+      setList(searchResultMap ? searchResultMap(data || []) : data || []);
+    } finally {
+      setLoadingSearch(false);
+    }
+  }
+
+  return (
+    <section className="border border-gray rounded-xl bg-color-2 p-4">
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div>
+          <h2 className="text-lg font-semibold">{title}</h2>
+          {subtitle && <p className="text-sm text-gray">{subtitle}</p>}
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            className="rounded border border-gray bg-color-1 text-color px-2 py-1"
+            placeholder={`Search ${title.toLowerCase()}…`}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && serverSearchEndpoint && runServerSearch()}
+          />
+          {serverSearchEndpoint && (
+            <button onClick={runServerSearch} className="px-3 py-1 rounded border border-gray">
+              {loadingSearch ? "…" : "Search"}
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Location */}
-      <section>
-        <h2 className="text-xl font-semibold">Location</h2>
-        <select value={locationLevel} onChange={(e) => setLocationLevel(e.target.value)} className="border p-2 rounded w-full mb-2">
-          <option value="provinsi">Provinsi</option>
-          <option value="kabupaten">Kabupaten</option>
-          <option value="kecamatan">Kecamatan</option>
-        </select>
-        {["kabupaten", "kecamatan"].includes(locationLevel) && (
-          <select value={selectedProvinsi} onChange={(e) => setSelectedProvinsi(e.target.value)} className="border p-2 rounded w-full mb-2">
-            <option value="">Select Provinsi</option>
-            {provinsiList.map((p) => (
-              <option key={p._id} value={p._id}>{p.name}</option>
-            ))}
-          </select>
-        )}
-        {["kecamatan"].includes(locationLevel) && (
-          <select value={selectedKabupaten} onChange={(e) => setSelectedKabupaten(e.target.value)} className="border p-2 rounded w-full mb-2">
-            <option value="">Select Kabupaten</option>
-            {kabupatenList.map((k) => (
-              <option key={k._id} value={k._id}>{k.name}</option>
-            ))}
-          </select>
-        )}
-        <input value={locationName} onChange={(e) => setLocationName(e.target.value)} className="border p-2 rounded w-full mb-2" placeholder="Location name" />
-        <button onClick={handleLocationSubmit} className="bg-purple-600 text-white px-4 py-2 rounded">Submit Location</button>
-      </section>
+      {/* Add new */}
+      <div className="flex items-center gap-2 mb-3">
+        <input
+          className="flex-1 rounded border border-gray bg-color-1 text-color px-2 py-2"
+          placeholder={`New ${title.slice(0, -1)} name`}
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={async (e) => {
+            if (e.key === "Enter") {
+              await onAdd(newName);
+              setNewName("");
+            }
+          }}
+        />
+        <button
+          className="btn-primary text-white px-4 py-2 rounded"
+          onClick={async () => {
+            await onAdd(newName);
+            setNewName("");
+          }}
+        >
+          Add
+        </button>
+      </div>
 
-      {/* Industry */}
-      <section>
-        <h2 className="text-xl font-semibold">Industry</h2>
-        <input value={industryName} onChange={(e) => setIndustryName(e.target.value)} className="border p-2 rounded w-full mb-2" placeholder="Industry name" />
-        <button onClick={() => handleAdd("Industry", industryName, "/admin/industry")} className="bg-blue-600 text-white px-4 py-2 rounded">Add Industry</button>
-        <ul className="mt-2">
-          {industryList.map((item) => (
-            <li key={item._id} className="flex justify-between">
-              <span>{item.name}</span>
-              <button onClick={() => handleDelete("industry", item._id)} className="text-red-500">Delete</button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* List */}
+      <ul className="divide-y divide-gray border border-gray rounded-lg bg-color-1">
+        {(serverSearchEndpoint ? list : clientFiltered).map((it) => (
+          <EditableRow
+            key={it._id}
+            item={it}
+            onSave={(name) => onUpdate(it._id, name)}
+            onDelete={() => onDelete(it._id)}
+            rightNode={columns
+              .filter((c) => c.key !== "name")
+              .map((c) => (
+                <span key={c.key} className={cls("text-xs", c.width)}>
+                  {c.render ? c.render(it[c.key], it) : String(it[c.key] ?? "")}
+                </span>
+              ))}
+          />
+        ))}
+        {(!items || items.length === 0) && <li className="p-3 text-sm text-gray">No items yet.</li>}
+      </ul>
+    </section>
+  );
+}
 
-      {/* Skill */}
-      <section>
-        <h2 className="text-xl font-semibold">Skill</h2>
-        <input value={skillName} onChange={(e) => setSkillName(e.target.value)} className="border p-2 rounded w-full mb-2" placeholder="Skill name" />
-        <button onClick={() => handleAdd("Skill", skillName, "/admin/skill")} className="bg-green-600 text-white px-4 py-2 rounded">Add Skill</button>
-        <ul className="mt-2">
-          {skillList.map((item) => (
-            <li key={item._id} className="flex justify-between">
-              <span>{item.name}</span>
-              <button onClick={() => handleDelete("skill", item._id)} className="text-red-500">Delete</button>
-            </li>
-          ))}
-        </ul>
-      </section>
+/** -------- Location add blocks -------- */
+function AddLocationBlocks({
+  provinsi,
+  kabupaten,
+  kecamatan,
+  selectedProvinsiId,
+  selectedKabupatenId,
+  onAdded,
+}) {
+  // inputs
+  const [pName, setPName] = useState("");
+  const [kName, setKName] = useState("");
+  const [cName, setCName] = useState("");
 
-      {/* Study Program */}
-      <section>
-        <h2 className="text-xl font-semibold">Study Program</h2>
-        <input value={studyProgramName} onChange={(e) => setStudyProgramName(e.target.value)} className="border p-2 rounded w-full mb-2" placeholder="Study Program name" />
-        <button onClick={() => handleAdd("Study Program", studyProgramName, "/admin/study-program")} className="bg-orange-600 text-white px-4 py-2 rounded">Add Study Program</button>
-        <ul className="mt-2">
-          {studyProgramList.map((item) => (
-            <li key={item._id} className="flex justify-between">
-              <span>{item.name}</span>
-              <button onClick={() => handleDelete("study-program", item._id)} className="text-red-500">Delete</button>
-            </li>
-          ))}
-        </ul>
-      </section>
+  const addP = async () => {
+    if (!pName.trim()) return toast.error("Provinsi name required");
+    await axiosInstance.post("/admin/provinsi", { name: pName.trim() });
+    toast.success("Provinsi added");
+    setPName("");
+    onAdded?.();
+  };
+  const addK = async () => {
+    if (!kName.trim()) return toast.error("Kabupaten name required");
+    if (!selectedProvinsiId) return toast.error("Select Provinsi first");
+    await axiosInstance.post("/admin/kabupaten", { name: kName.trim(), provinsi: selectedProvinsiId });
+    toast.success("Kabupaten added");
+    setKName("");
+    onAdded?.();
+  };
+  const addC = async () => {
+    if (!cName.trim()) return toast.error("Kecamatan name required");
+    if (!selectedKabupatenId) return toast.error("Select Kabupaten first");
+    await axiosInstance.post("/admin/kecamatan", { name: cName.trim(), kabupaten: selectedKabupatenId });
+    toast.success("Kecamatan added");
+    setCName("");
+    onAdded?.();
+  };
 
-      {/* University */}
-      <section>
-        <h2 className="text-xl font-semibold">University</h2>
-        <input value={universityName} onChange={(e) => setUniversityName(e.target.value)} className="border p-2 rounded w-full mb-2" placeholder="University name" />
-        <select multiple value={selectedSpecialities} onChange={(e) => setSelectedSpecialities([...e.target.selectedOptions].map(o => o.value))} className="border p-2 rounded w-full mb-2">
-          {studyProgramList.map((sp) => (
-            <option key={sp._id} value={sp._id}>{sp.name}</option>
-          ))}
-        </select>
-        <button onClick={handleUniversitySubmit} className="bg-indigo-600 text-white px-4 py-2 rounded">Add University</button>
-        <ul className="mt-4 space-y-2">
-          {universityList.map((uni) => (
-            <li key={uni._id}>
-              <strong>{uni.name}</strong>
-              {uni.speciality?.length > 0 && (
-                <ul className="ml-4 list-disc text-sm">
-                  {uni.speciality.map(sp => <li key={typeof sp === "string" ? sp : sp._id}>{typeof sp === "string" ? sp : sp.name}</li>)}
-                </ul>
-              )}
-              <button onClick={() => handleDelete("university", uni._id)} className="text-red-500 text-sm">Delete</button>
-            </li>
-          ))}
-        </ul>
-      </section>
+  return (
+    <div className="grid grid-cols-1 gap-3">
+      <div className="border border-gray rounded-lg p-3 bg-color-1">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="font-semibold">Provinsi</h3>
+          <Pill>{provinsi.length}</Pill>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            value={pName}
+            onChange={(e) => setPName(e.target.value)}
+            className="flex-1 rounded border border-gray bg-color-1 text-color px-2 py-2"
+            placeholder="New provinsi name"
+          />
+          <button onClick={addP} className="px-3 py-2 rounded border border-gray">
+            Add
+          </button>
+        </div>
+      </div>
+
+      <div className="border border-gray rounded-lg p-3 bg-color-1">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="font-semibold">Kabupaten</h3>
+          <Pill>{kabupaten.length}</Pill>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            value={kName}
+            onChange={(e) => setKName(e.target.value)}
+            className="flex-1 rounded border border-gray bg-color-1 text-color px-2 py-2"
+            placeholder="New kabupaten name"
+          />
+          <button onClick={addK} className="px-3 py-2 rounded border border-gray" disabled={!selectedProvinsiId}>
+            Add
+          </button>
+        </div>
+      </div>
+
+      <div className="border border-gray rounded-lg p-3 bg-color-1">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="font-semibold">Kecamatan</h3>
+          <Pill>{kecamatan.length}</Pill>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            value={cName}
+            onChange={(e) => setCName(e.target.value)}
+            className="flex-1 rounded border border-gray bg-color-1 text-color px-2 py-2"
+            placeholder="New kecamatan name"
+          />
+          <button onClick={addC} className="px-3 py-2 rounded border border-gray" disabled={!selectedKabupatenId}>
+            Add
+          </button>
+        </div>
+      </div>
     </div>
+  );
+}
+
+/** -------- Universities (with specialities multi-select) -------- */
+function UniversitiesCard({ universities, studyPrograms, onAdded, onDeleted }) {
+  const [q, setQ] = useState("");
+  const [name, setName] = useState("");
+  const [selected, setSelected] = useState([]); // study program ids
+
+  const filtered = useMemo(() => {
+    if (!q.trim()) return universities || [];
+    const r = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    return (universities || []).filter((u) => r.test(u?.name || ""));
+  }, [q, universities]);
+
+  const addUni = async () => {
+    if (!name.trim()) return toast.error("University name required");
+    await axiosInstance.post("/admin/university", { name: name.trim(), speciality: selected });
+    toast.success("University added");
+    setName("");
+    setSelected([]);
+    onAdded?.();
+  };
+
+  return (
+    <section className="border border-gray rounded-xl bg-color-2 p-4">
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div>
+          <h2 className="text-lg font-semibold">Universities</h2>
+          <p className="text-sm text-gray">Attach one or more Study Programs as specialities.</p>
+        </div>
+        <input
+          className="rounded border border-gray bg-color-1 text-color px-2 py-1"
+          placeholder="Search universities…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+
+      {/* Add new */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+        <input
+          className="rounded border border-gray bg-color-1 text-color px-2 py-2"
+          placeholder="University name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <select
+          multiple
+          value={selected}
+          onChange={(e) => setSelected([...e.target.selectedOptions].map((o) => o.value))}
+          className="rounded border border-gray bg-color-1 text-color px-2 py-2 min-h-[42px]"
+        >
+          {studyPrograms.map((sp) => (
+            <option key={sp._id} value={sp._id}>
+              {sp.name}
+            </option>
+          ))}
+        </select>
+        <button onClick={addUni} className="btn-primary text-white rounded px-4 py-2">
+          Add University
+        </button>
+      </div>
+
+      {/* List */}
+      <ul className="divide-y divide-gray border border-gray rounded bg-color-1">
+        {filtered.map((uni) => (
+          <li key={uni._id} className="p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="font-medium">{uni.name}</div>
+                {uni.speciality?.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {uni.speciality.map((sp) => (
+                      <Pill key={typeof sp === "string" ? sp : sp._id}>
+                        {typeof sp === "string" ? sp : sp.name}
+                      </Pill>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button onClick={() => onDeleted?.(uni._id)} className="px-2 py-1 rounded border border-gray text-red-600">
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+        {filtered.length === 0 && <li className="p-3 text-sm text-gray">No universities.</li>}
+      </ul>
+    </section>
   );
 }

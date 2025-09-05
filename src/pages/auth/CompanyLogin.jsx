@@ -5,7 +5,9 @@ export default function CompanyLogin() {
     return (
         <div className="h-screen bg-color-1">
             <Navigation />
-            <LoginForm role="company" title="Company" />
+            <div className="mt-[20vh]">
+                <LoginForm role="company" title="Company" />
+            </div>
         </div>
     );
 }

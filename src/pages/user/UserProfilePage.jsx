@@ -8,6 +8,7 @@ import Navigation from "../../component/Navigation";
 import LocationSelector from "../../component/LocationSelector";
 import BaseModal from "../../component/BaseModal";
 import { useNavigate } from "react-router-dom";
+import SkillComposer from "../../component/SkillComposer";
 
 const UserProfilePage = () => {
   const { profilePicture } = useContext(UserContext);
@@ -57,7 +58,9 @@ const UserProfilePage = () => {
           skills: (user.skills || []).map((s) => ({
             value: s._id || s,
             label: s.name || "",
+            usageCount: typeof s.usageCount === "number" ? s.usageCount : 0, // keep count
           })),
+
           location: {
             provinsi: user.location?.provinsi?._id || user.location?.provinsi || "",
             kabupaten: user.location?.kabupaten?._id || user.location?.kabupaten || "",
@@ -161,7 +164,7 @@ const UserProfilePage = () => {
     const push = () => {
       try {
         window.history.pushState({ _profileGuard: true }, "");
-      } catch {}
+      } catch { }
     };
     push();
 
@@ -275,7 +278,7 @@ const UserProfilePage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <h2 className="text-xl font-semibold text-color">Skills</h2>
-                  <SkillSelector
+                  <SkillComposer
                     value={form.skills || []}
                     onChange={(skills) => {
                       const next = { ...form, skills };

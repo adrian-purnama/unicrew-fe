@@ -21,7 +21,7 @@ export default function ForgotPasswordForm({ role }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
-          className="w-full border rounded px-4 py-2"
+          className="w-full border rounded px-4 py-2 border-gray text-color bg-color-1"
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

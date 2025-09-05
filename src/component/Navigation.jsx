@@ -1,6 +1,7 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+// src/components/nav/Navigation.jsx
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, LogOut, Sun, Moon } from "lucide-react";
+import { Bell, LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { Popover } from "@headlessui/react";
 import axiosInstance from "../../utils/ApiHelper";
 import { UserContext } from "../../utils/UserContext";
@@ -19,28 +20,33 @@ export default function Navigation() {
     setNotifications,
   } = useContext(UserContext);
 
-
+  // THEME STATE
+  // "system" | "light" | "dark" (persisted); default to "system" (device)
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
-  const navigate = useNavigate();
 
-  // Detect OS dark mode
-  const mediaQuery = useMemo(
-    () =>
-      typeof window !== "undefined" && window.matchMedia
-        ? window.matchMedia("(prefers-color-scheme: dark)")
-        : null,
-    []
-  );
+  // Track OS preference so "system" can follow device changes
+  const [systemPrefersDark, setSystemPrefersDark] = useState(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
-  // Effective theme that actually applies to <html>
-  const effectiveTheme = useMemo(() => {
-    if (theme === "system") {
-      return mediaQuery?.matches ? "dark" : "light";
-    }
-    return theme;
-  }, [theme, mediaQuery?.matches]);
+  // Listen to OS changes
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e) => setSystemPrefersDark(e.matches);
+    mq.addEventListener?.("change", handler);
+    mq.addListener?.(handler); // Safari fallback
+    return () => {
+      mq.removeEventListener?.("change", handler);
+      mq.removeListener?.(handler);
+    };
+  }, []);
 
-  // Apply/remove .dark on <html> and set color-scheme meta (optional)
+  // Effective theme: user choice unless "system"
+  const effectiveTheme = theme === "system" ? (systemPrefersDark ? "dark" : "light") : theme;
+
+  // Apply/remove .dark on <html>; set color-scheme meta for form controls
   useEffect(() => {
     const root = document.documentElement;
     if (effectiveTheme === "dark") root.classList.add("dark");
@@ -55,23 +61,16 @@ export default function Navigation() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // React to OS changes only if user chose "system"
-  useEffect(() => {
-    if (!mediaQuery) return;
-    const handler = () => {
-      if (theme === "system") {
-        // Trigger recompute; no-op state setter keeps the same value but re-renders
-        setTheme((t) => t);
-      }
-    };
-    mediaQuery.addEventListener?.("change", handler);
-    return () => mediaQuery.removeEventListener?.("change", handler);
-  }, [theme, mediaQuery]);
-
-  // Cycle Light → Dark → System → Light ...
+  // Cycle Light → Dark → System → Light …
   const cycleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : prev === "dark" ? "system" : "light"));
   };
+
+  // Icon reflects the current selection (system shows monitor)
+  const IconToggle = theme === "system" ? Monitor : effectiveTheme === "light" ? Moon : Sun;
+
+  // --------- REST OF YOUR NAV ---------
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("unicru-token");
@@ -97,12 +96,8 @@ export default function Navigation() {
 
   const handleLogoClick = () => {
     if (isLoggedIn) {
-      // if logged in, go to role page
-      if (role) {
-        navigate(`/${role}`);
-      } else {
-        navigate("/");
-      }
+      if (role) navigate(`/${role}`);
+      else navigate("/");
     } else {
       navigate("/");
     }
@@ -116,8 +111,6 @@ export default function Navigation() {
       { to: "/admin/entry", label: "Data Entry" },
     ],
   };
-
-  const IconToggle = effectiveTheme === "light" ? Moon : Sun;
 
   return (
     <nav className="nav-container flex items-center justify-between px-6 py-3 border-gray border-b-1 bg-color-1">
@@ -135,7 +128,7 @@ export default function Navigation() {
         {/* Right */}
         {isLoggedIn ? (
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Theme Toggle (square, centered) */}
+            {/* Theme Toggle */}
             <button
               type="button"
               onClick={cycleTheme}
@@ -145,12 +138,12 @@ export default function Navigation() {
               <IconToggle className="w-5 h-5" />
               {theme === "system" && (
                 <span className="absolute -bottom-1 -right-1 text-[10px] leading-none px-1 rounded bg-gray-300 dark:bg-gray-600">
-                  System
+                  Sys
                 </span>
               )}
             </button>
 
-            {/* Notifications (square, centered) */}
+            {/* Notifications */}
             <Popover className="relative">
               <Popover.Button
                 type="button"
@@ -179,10 +172,11 @@ export default function Navigation() {
                     notifications.map((notif) => (
                       <div
                         key={notif._id}
-                        className={`py-2 text-sm ${notif.isRead
+                        className={`py-2 text-sm ${
+                          notif.isRead
                             ? "text-gray-600"
                             : "font-medium text-blue-700 dark:text-blue-300"
-                          }`}
+                        }`}
                       >
                         {notif.message}
                         <div className="text-xs text-gray-400">
@@ -220,7 +214,7 @@ export default function Navigation() {
           </div>
         ) : (
           <div className="flex items-center gap-2 sm:gap-3 text-sm">
-            {/* Theme Toggle (square, centered) */}
+            {/* Theme Toggle (Guest) */}
             <button
               type="button"
               onClick={cycleTheme}
@@ -230,7 +224,7 @@ export default function Navigation() {
               <IconToggle className="w-5 h-5" />
               {theme === "system" && (
                 <span className="absolute -bottom-1 -right-1 text-[10px] leading-none px-1 rounded bg-gray-300 dark:bg-gray-600">
-                  S
+                  Sys
                 </span>
               )}
             </button>

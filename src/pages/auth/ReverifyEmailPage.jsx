@@ -29,13 +29,13 @@ export default function ReverifyEmailPage() {
   return (
     <>
       <Navigation />
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-gray-100 dark:to-gray-900 text-text px-4">
+    <div className="min-h-screen flex items-center justify-center bg-color-1 text-text px-4">
       <Toaster position="top-center" />
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 w-full max-w-md space-y-6"
+        className="bg-color-2 shadow-lg rounded-xl p-8 w-full max-w-md space-y-6"
       >
-        <h2 className="text-3xl font-bold text-center">
+        <h2 className="text-3xl font-bold text-center text-color">
           <span className="text-primary">
             Reverify
           </span> Email
@@ -48,7 +48,7 @@ export default function ReverifyEmailPage() {
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary"
+            className="w-full border border-gray text-color text-text px-4 py-2 rounded bg-color-1 focus:outline-primary"
             required
           />
         </div>

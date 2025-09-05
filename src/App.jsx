@@ -21,6 +21,9 @@ import CompanyProfilePage from "./pages/company/CompanyProfilePage";
 import CompanyJobDetailPage from "./pages/company/CompanyJobDetailPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
+import AdminUsersPage from "./pages/admin/AdminUserPage";
+import AdminCompaniesPage from "./pages/admin/AdminCompaniesPages";
+import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
 
 function App() {
     const {
@@ -153,6 +156,9 @@ function App() {
                 {/* admin */}
                 <Route path="/admin" element={<AdminHomePage />} />
                 <Route path="/admin/entry" element={<AdminDataEntryPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/companies" element={<AdminCompaniesPage />} />
+                <Route path="/admin/reviews" element={<AdminReviewsPage />} />
 
                 {/* user */}
                 <Route path="/user" element={<UserHomePage />} />

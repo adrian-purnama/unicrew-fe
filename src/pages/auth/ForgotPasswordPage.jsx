@@ -11,11 +11,11 @@ const ForgotPasswordPage = () => {
   return (
     <>
     <Navigation />
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-gray-100 dark:to-gray-900 text-text px-4">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md space-y-6">
+    <div className="min-h-screen flex items-center bg-color-1 justify-center text-text px-4">
+      <div className="p-8 bg-color-2 rounded-xl shadow-lg w-full max-w-md space-y-6">
         <div className="text-center space-y-1">
-          <h1 className="text-3xl font-bold"><span className="color-primary">Forgot</span> Password</h1>
-          <p className="text-gray dark:text-gray-300 text-sm">
+          <h1 className="text-3xl font-bold text-color"><span className="color-primary">Forgot</span> Password</h1>
+          <p className="text-gray text-sm">
             Enter your email to receive a reset link ({role}).
           </p>
         </div>
