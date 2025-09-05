@@ -35,6 +35,8 @@ export default function AdminCompaniesPage() {
   return (
     <>
       <Navigation />
+            <div className="bg-color-1">
+
       <div className="max-w-6xl mx-auto p-6 bg-color-1 min-h-[100vh] text-color">
         <h1 className="text-xl font-semibold mb-4">Companies</h1>
         <div className="flex gap-2 mb-4">
@@ -88,6 +90,8 @@ export default function AdminCompaniesPage() {
           <button disabled={page >= pages} onClick={() => fetchRows(page + 1)} className="border px-3 py-1 rounded disabled:opacity-50">Next</button>
         </div>
       </div>
+            </div>
+
     </>
   );
 }

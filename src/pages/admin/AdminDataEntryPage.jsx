@@ -297,6 +297,8 @@ export default function AdminDataEntryPage() {
   return (
     <>
     <Navigation/>
+          <div className="bg-color-1">
+
     <div className="mx-auto max-w-6xl p-6 space-y-8 bg-color-1 min-h-[100vh] text-color">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Admin Data Entry</h1>
@@ -486,6 +488,8 @@ export default function AdminDataEntryPage() {
         />
       )}
     </div>
+          </div>
+
     <Footer />
     </>
   );
