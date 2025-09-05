@@ -53,7 +53,7 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm">
+            <div className="text-center pt-4 border-t border-gray text-gray text-sm">
                 &copy; {new Date().getFullYear()} Unicrew. All rights reserved.
             </div>
             <div className="text-center pb-4 text-[.7rem] text-gray-200">

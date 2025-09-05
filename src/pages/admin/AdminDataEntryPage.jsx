@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../../utils/ApiHelper";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import Footer from "../../component/Footer";
+import Navigation from "../../component/Navigation";
 
 /** Mini helpers */
 const Confirm = (msg) => window.confirm(msg);
@@ -293,10 +295,12 @@ export default function AdminDataEntryPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl p-6 space-y-8">
+    <>
+    <Navigation/>
+    <div className="mx-auto max-w-6xl p-6 space-y-8 bg-color-1 min-h-[100vh] text-color">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Admin Data Entry</h1>
-        <nav className="flex flex-wrap gap-2">
+        <nav className="flex flex-wrap gap-2 text-gray">
           {tabs.map((t) => (
             <button
               key={t.key}
@@ -482,6 +486,8 @@ export default function AdminDataEntryPage() {
         />
       )}
     </div>
+    <Footer />
+    </>
   );
 }
 

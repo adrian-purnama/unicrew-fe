@@ -31,16 +31,16 @@ export default function AdminReviewsPage() {
   return (
     <>
       <Navigation />
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto p-6 bg-color-1 min-h-[100vh] text-color">
         <h1 className="text-xl font-semibold mb-4">Reviews</h1>
         <div className="flex gap-2 mb-4">
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search comment/company/user" className="border p-2 rounded w-full" />
-          <input value={minRating} onChange={(e) => setMinRating(e.target.value)} placeholder="Min rating" className="border p-2 rounded w-28" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search comment/company/user" className="border p-2 rounded w-full border-gray" />
+          <input value={minRating} onChange={(e) => setMinRating(e.target.value)} placeholder="Min rating" className="border p-2 rounded w-28 border-gray" />
           <button onClick={() => fetchRows(1)} className="btn-primary text-white px-3 py-2 rounded">Search</button>
         </div>
 
         <div className="overflow-x-auto border rounded">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-sm text-gray">
             <thead className="bg-color-2">
               <tr>
                 <th className="p-2 text-left">Company</th>

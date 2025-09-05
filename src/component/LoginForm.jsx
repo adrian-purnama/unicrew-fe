@@ -48,7 +48,7 @@ export default function LoginForm({ role, title, compact = false }) {
           <label className="block font-medium mb-1">Email</label>
           <input
             type="email"
-            className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary text-color"
+            className="w-full border border-gray bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary text-color"
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -62,7 +62,7 @@ export default function LoginForm({ role, title, compact = false }) {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded pr-10 focus:outline focus:outline-2 focus:outline-primary"
+              className="w-full border border-gray bg-background text-text px-4 py-2 rounded pr-10 focus:outline focus:outline-2 focus:outline-primary"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

@@ -3,6 +3,7 @@ import axiosInstance from "../../../utils/ApiHelper";
 import toast, { Toaster } from "react-hot-toast";
 import { Eye, EyeOff, Check } from "lucide-react";
 import Navigation from "../../component/Navigation";
+import Footer from "../../component/Footer";
 
 export default function AdminRegister() {
   const [form, setForm] = useState({
@@ -53,21 +54,22 @@ export default function AdminRegister() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen flex items-center justify-center bg-background text-text px-4 py-12">
+      <div className="min-h-screen flex items-center justify-center bg-color-1 text-text px-4 py-12">
         <Toaster position="top-center" />
         <form
           onSubmit={handleSubmit}
-          className="bg-white dark:bg-gray-900 shadow-lg p-8 rounded-xl w-full max-w-md space-y-6"
+          className="bg-color-2 shadow-lg p-8 rounded-xl w-full max-w-md space-y-6 text-color"
         >
-          <h2 className="text-3xl font-bold text-center">Admin Registration</h2>
+          <h2 className="text-3xl font-bold text-center text-color"><span className="color-primary">Admin</span> Registration</h2>
 
           <div>
             <label className="block font-medium mb-1">Email</label>
             <input
               type="email"
+              placeholder="example@gmail.com"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary"
+              className="w-full border border-gray bg-color-1 text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary"
             />
           </div>
 
@@ -78,11 +80,11 @@ export default function AdminRegister() {
                 type={showPassword ? "text" : "password"}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded pr-10 focus:outline focus:outline-2 focus:outline-primary"
+                className="w-full border border-gray bg-color-1 text-text px-4 py-2 rounded pr-10 focus:outline focus:outline-2 focus:outline-primary"
               />
               <button
                 type="button"
-                className="absolute right-2 top-2 text-gray-400"
+                className="absolute right-2 top-2 text-gray"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -96,7 +98,7 @@ export default function AdminRegister() {
               type="password"
               value={form.confirmPassword}
               onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-              className="w-full border border-gray-300 dark:border-gray-700 bg-background text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary"
+              className="w-full border border-gray bg-color-1 text-text px-4 py-2 rounded focus:outline focus:outline-2 focus:outline-primary"
             />
           </div>
 
@@ -120,7 +122,7 @@ export default function AdminRegister() {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 text-sm">
+          <div className="flex items-start gap-2 text-sm mb-0">
             <input
               type="checkbox"
               checked={form.acceptedTerms}
@@ -130,6 +132,7 @@ export default function AdminRegister() {
               I agree to the <a href="#" className="underline text-primary">Terms</a> and <a href="#" className="underline text-primary">Privacy Policy</a>.
             </label>
           </div>
+          <p className="text-[0.8rem] text-gray mx-auto mb-2">After registering please wait confirmation from admin master</p>
 
           <button
             type="submit"
@@ -140,12 +143,14 @@ export default function AdminRegister() {
               !form.acceptedTerms ||
               Object.values(passwordRules).includes(false)
             }
-            className="btn-primary w-full"
+            className="btn-primary w-full font-bold"
           >
             Register Admin
           </button>
         </form>
+
       </div>
+      <Footer />
     </>
   );
 }
