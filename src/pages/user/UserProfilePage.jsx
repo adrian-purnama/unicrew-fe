@@ -200,7 +200,6 @@ const UserProfilePage = () => {
 
   return (
     <>
-      <Navigation />
 
       <main className="min-h-screen bg-color-1">
         {/* Page header */}
