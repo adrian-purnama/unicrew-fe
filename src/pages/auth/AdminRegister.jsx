@@ -31,25 +31,27 @@ export default function AdminRegister() {
     });
   }, [form.password, form.confirmPassword]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { length, number, symbol, match } = passwordRules;
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  const { length, number, symbol, match } = passwordRules;
 
-    if (!form.acceptedTerms) return toast.error("You must accept terms and privacy policy.");
-    if (!length || !number || !symbol || !match) {
-      return toast.error("Please fix password requirements.");
-    }
+  if (!form.acceptedTerms) return toast.error("You must accept terms and privacy policy.");
+  if (!length || !number || !symbol || !match) {
+    return toast.error("Please fix password requirements.");
+  }
 
-    try {
-      await axiosInstance.post("/register/admin", {
-        email: form.email,
-        password: form.password,
-      });
-      toast.success("Registered successfully. Check your email to verify.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Registration failed");
-    }
-  };
+  const req = axiosInstance.post("/register/admin", {
+    email: form.email,
+    password: form.password,
+  });
+
+  await toast.promise(req, {
+    loading: "Registering admin… please wait",
+    success: "Registered successfully. Check your email to verify.",
+    error: (err) => err?.response?.data?.message || "Registration failed",
+  });
+};
+
 
   return (
     <>

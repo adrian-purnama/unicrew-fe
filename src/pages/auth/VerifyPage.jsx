@@ -26,7 +26,7 @@ export default function VerifyPage() {
 
             localStorage.setItem("unicru-token", res.data.token);
             setStatus("success");
-            setTimeout(()=> {navigate(`/${role}`)}, 1000)
+            setTimeout(() => { navigate(`/${role}`) }, 1000)
         } catch (err) {
             setStatus("error");
             setAttempts((prev) => prev + 1);
@@ -43,17 +43,34 @@ export default function VerifyPage() {
     }, [status, navigate]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-gray-100 dark:to-gray-900 text-text px-4">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div className="">
-                    <img src="https://github.com/adrian-purnama/photo-host/blob/main/unicru%20photo/verify%20email%20mascot.png?raw=true" alt="Verify" className="w-full h-auto object-contain max-w-[15rem] mx-auto" />
-                </div>
+        <div className="min-h-screen flex items-center justify-center bg-color-1 text-text px-4">
+            <div className="bg-color-2 p-8 rounded-xl shadow-lg max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div className="relative flex items-center justify-center">
+                    {/* Glow */}
+                    <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
+                        <div
+                        aria-hidden="true"
+                        className="absolute top-1/5 left-1/2 w-[500px] h-[500px] -translate-x-1/2 rounded-full"
+                        style={{
+                            backgroundColor: "rgba(119, 195, 229, .5)", // primary color with opacity
+                            filter: "blur(100px)",
+                            zIndex: 0,
+                        }}
+                    />
+                    </div>
 
+                    {/* Image */}
+                    <img
+                        src="https://github.com/adrian-purnama/photo-host/blob/main/unicru%20photo/verify%20email%20mascot.png?raw=true"
+                        alt="Verify"
+                        className="relative w-full h-auto object-contain max-w-[15rem] mx-auto drop-shadow-lg"
+                    />
+                </div>
                 <div className="text-center space-y-6">
-                    <h1 className="text-3xl font-bold">Verify Your Email</h1>
+                    <h1 className="text-3xl font-bold text-color">Verify Your Email</h1>
                     {status === "idle" && (
                         <>
-                            <p className="text-gray-600 dark:text-gray-300">
+                            <p className="text-gray">
                                 Click below to confirm your email and activate your account.
                             </p>
                             <button onClick={handleVerify} className="btn-primary px-6 py-2 font-bold text-color">
