@@ -168,6 +168,13 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                 </div>
             )}
 
+            {job.description && (
+                <div className="mb-4">
+                    <strong className="text-color">Description:</strong>
+                    <p>{job.description}</p>
+                </div>
+            )}
+
             {isLoggedIn ? (
                 <>
                     {!job.hasApplied && (

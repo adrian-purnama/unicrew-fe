@@ -18,7 +18,6 @@ axiosInstance.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // Dynamically set Content-Type only if not FormData
   if (!(config.data instanceof FormData)) {
     config.headers['Content-Type'] = 'application/json';
   }
