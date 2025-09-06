@@ -71,11 +71,19 @@ export default function SecretAdminGate({
           >
             Admin Login
           </button>
+
           <button
             onClick={() => navigate("/auth/admin/register")}
             className="w-full py-2 rounded-lg font-medium border border-gray text-color hover:bg-theme-highlight"
           >
             Admin Register
+          </button>
+
+                    <button
+            onClick={() => navigate("forgot-password?role=admin")}
+            className="w-full py-2 rounded-lg font-medium border border-gray text-color hover:bg-theme-highlight"
+          >
+            Admin Reset Password
           </button>
         </div>
 
@@ -83,6 +91,7 @@ export default function SecretAdminGate({
           Tip: change the combo via the <code>combo</code> prop.
         </p> */}
       </div>
+      
     </div>
   );
 }

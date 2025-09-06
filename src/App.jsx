@@ -26,6 +26,7 @@ import AdminCompaniesPage from "./pages/admin/AdminCompaniesPages";
 import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
 import Navigation from "./component/Navigation";
 import Footer from "./component/Footer";
+import AdminResetPasswordPage from "./pages/admin/AdminResetPasswordPage";
 
 function App() {
   const {
@@ -164,6 +165,7 @@ function App() {
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/companies" element={<AdminCompaniesPage />} />
           <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+          <Route path="/admin/resetpassword" element={<AdminResetPasswordPage />} />
 
           {/* user */}
           <Route path="/user" element={<UserHomePage />} />

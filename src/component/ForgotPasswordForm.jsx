@@ -1,36 +1,43 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import axiosInstance from "../../utils/ApiHelper";
-import toast, { Toaster } from "react-hot-toast";
 
-export default function ForgotPasswordForm({ role }) {
+
+export default function ForgotPasswordForm({ role = "user" }) {
   const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
+    if (!email) return toast.error("Email is required");
+    setSending(true);
     try {
       await axiosInstance.post("/auth/forgot-password", { email, role });
-      toast.success("Reset link has been sent!");
+      toast.success("Reset link sent. Check your inbox (and spam).");
+      setEmail("");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong");
+      toast.error(err?.response?.data?.message || "Failed to send reset email");
+    } finally {
+      setSending(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <Toaster />
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium mb-1 text-color">Email</label>
         <input
           type="email"
-          className="w-full border rounded px-4 py-2 border-gray text-color bg-color-1"
-          placeholder="Enter your email"
           value={email}
+          placeholder={`your ${role} email`}
           onChange={(e) => setEmail(e.target.value)}
-          required
+          className="w-full border border-gray bg-color-1 text-text px-3 py-2 rounded text-color"
         />
-        <button className="btn-primary w-full text-color font-bold" type="submit">
-          Send Reset Link
-        </button>
-      </form>
-    </div>
+      </div>
+
+      <button type="submit" disabled={sending} className="btn-primary w-full font-bold">
+        {sending ? "Sending…" : "Send Reset Link"}
+      </button>
+    </form>
   );
 }

@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Wrench,
+  EyeClosed,
 } from 'lucide-react';
 import Footer from '../../component/Footer';
 
@@ -116,6 +117,12 @@ export default function AdminHomePage() {
               title="Location Sync"
               subtitle="Run Indonesia Provinsi/Kabupaten/Kecamatan sync."
               Icon={Wrench}
+            />
+            <CardLink
+              to="/admin/resetpassword"
+              title="Reset Password"
+              subtitle="Run Indonesia Provinsi/Kabupaten/Kecamatan sync."
+              Icon={EyeClosed}
             />
           </div>
         </section>
