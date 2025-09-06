@@ -116,10 +116,6 @@ export default function SkillComposer({ value = [], onChange }) {
 
   return (
     <div className="text-color">
-      <label className="font-semibold block mb-1">Skills</label>
-      <p className="text-xs text-gray mb-2">
-        Type to search or press <strong>Enter</strong> to create a new skill.
-      </p>
 
       <AsyncCreatableSelect
         isMulti

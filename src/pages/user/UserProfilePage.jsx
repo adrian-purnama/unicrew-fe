@@ -277,6 +277,14 @@ const UserProfilePage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <h2 className="text-xl font-semibold text-color">Skills</h2>
+                  <p className="text-xs text-gray mb-2">
+                    • You can have up to <strong>10</strong> skill.
+                  </p>
+                  <p className="text-xs text-gray mb-2">
+                    • Type to search or press <strong>Enter</strong> to create a new skill.
+                  </p>
+
+
                   <SkillComposer
                     value={form.skills || []}
                     onChange={(skills) => {

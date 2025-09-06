@@ -1,4 +1,4 @@
-import { Send, Bookmark, BookmarkCheck, Star, MessageSquare } from "lucide-react";
+import { Send, Bookmark, BookmarkCheck, Star, MessageSquare, BadgeCheck } from "lucide-react";
 import { useContext, useState } from "react";
 import { UserContext } from "../../../utils/UserContext";
 import LoginForm from "../LoginForm";
@@ -64,7 +64,19 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-color">{job.title}</h1>
                     <div className="flex flex-col gap-2 mt-1 mb-2">
-                        <p className="text-sm text-gray">{job.company?.companyName}</p>
+                        <p className="text-gray-600 text-sm flex items-center gap-1.5">
+                            <span>{job.company?.companyName || job.company?.name}</span>
+                            {job.company?.trust?.verified && (
+                                <span
+                                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] bg-green-100 text-green-700"
+                                    title="Verified company"
+                                >
+                                    <BadgeCheck className="w-3 h-3" aria-hidden="true" />
+                                    <span className="sr-only">Verified company</span>
+                                    <span>Verified</span>
+                                </span>
+                            )}
+                        </p>
                         {job.company?.rating && job.company.rating.count > 0 && (
                             <div className="flex items-center gap-1 text-sm">
                                 <div className="flex items-center">
@@ -297,8 +309,8 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
 
             <BaseModal
                 isOpen={showLogin}
-                onClose={() => setShowLogin(false)}   
-                         >
+                onClose={() => setShowLogin(false)}
+            >
                 <LoginForm role="user" title="User" />
             </BaseModal>
 

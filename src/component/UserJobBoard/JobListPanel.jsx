@@ -1,4 +1,4 @@
-import { MapPin, DollarSign, Clock, Bookmark, BookmarkCheck } from "lucide-react";
+import { MapPin, DollarSign, Clock, Bookmark, BookmarkCheck, BadgeCheck } from "lucide-react";
 import { useState } from "react";
 import JobDetailPanel from "./JobDetailPanel";
 
@@ -167,9 +167,20 @@ export default function JobListPanel({
                                 <h3 className="font-semibold text-lg text-color mb-1">
                                     {job.title}
                                 </h3>
-                                <p className="text-gray-600 text-sm">
-                                    {job.company?.companyName || job.company?.name}
-                                </p>
+
+                                <div className="text-sm text-gray flex items-center gap-2">
+                                    <span>{job.company?.companyName}</span>
+                                    {job.company?.trust?.verified && (
+                                        <span
+                                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs bg-green-100 text-green-700"
+                                            title="This company has been verified by Unicru"
+                                        >
+                                            <BadgeCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                                            <span className="sr-only">Verified company</span>
+                                            <span>Verified</span>
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-1 text-sm text-gray mb-3">
