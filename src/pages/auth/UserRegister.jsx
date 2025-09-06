@@ -191,7 +191,6 @@ export default function UserRegister() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen flex items-center justify-center bg-background text-text px-4 py-[4rem] bg-color-1">
         <Toaster />
         <form onSubmit={handleSubmit} className="w-full max-w-2xl bg-color-2 shadow-xl rounded-xl p-8 space-y-6">

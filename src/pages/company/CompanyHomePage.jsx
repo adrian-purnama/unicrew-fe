@@ -138,7 +138,6 @@ export default function CompanyHomePage() {
 
   return (
     <div className="min-h-screen bg-color-1">
-      <Navigation />
       
       <div className="p-6 max-w-7xl mx-auto">
         {/* Header Section with Gradient Background */}

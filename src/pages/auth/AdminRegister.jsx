@@ -53,7 +53,6 @@ export default function AdminRegister() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen flex items-center justify-center bg-color-1 text-text px-4 py-12">
         <Toaster position="top-center" />
         <form
@@ -150,7 +149,6 @@ export default function AdminRegister() {
         </form>
 
       </div>
-      <Footer />
     </>
   );
 }

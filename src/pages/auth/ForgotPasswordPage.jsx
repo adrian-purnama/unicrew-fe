@@ -10,7 +10,6 @@ const ForgotPasswordPage = () => {
 
   return (
     <>
-    <Navigation />
     <div className="min-h-screen flex items-center bg-color-1 justify-center text-text px-4">
       <div className="p-8 bg-color-2 rounded-xl shadow-lg w-full max-w-md space-y-6">
         <div className="text-center space-y-1">
@@ -27,7 +26,6 @@ const ForgotPasswordPage = () => {
         </p>
       </div>
     </div>
-    <Footer />
     </>
   );
 };

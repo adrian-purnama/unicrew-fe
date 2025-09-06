@@ -28,7 +28,6 @@ export default function ReverifyEmailPage() {
 
   return (
     <>
-      <Navigation />
     <div className="min-h-screen flex items-center justify-center bg-color-1 text-text px-4">
       <Toaster position="top-center" />
       <form
@@ -65,7 +64,6 @@ export default function ReverifyEmailPage() {
         )}
       </form>
     </div>
-    <Footer />
     </>
   );
 }

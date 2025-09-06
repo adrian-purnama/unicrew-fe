@@ -12,6 +12,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@microsoft/fetch-event-source": "^2.0.1",
+    "@miracleufo/react-g-translator": "^1.3.4",
     "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.10.0",
     "date-fns": "^4.1.0",

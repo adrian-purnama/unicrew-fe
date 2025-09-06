@@ -24,19 +24,21 @@ import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
 import AdminUsersPage from "./pages/admin/AdminUserPage";
 import AdminCompaniesPage from "./pages/admin/AdminCompaniesPages";
 import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
+import Navigation from "./component/Navigation";
+import Footer from "./component/Footer";
 
 function App() {
-    const {
-        setUsername,
-        setRole,
-        setProfilePicture,
-        setIsLoggedIn,
-        setIsProfileComplete,
-        setNotifications,
-        setId,
-    } = useContext(UserContext);
+  const {
+    setUsername,
+    setRole,
+    setProfilePicture,
+    setIsLoggedIn,
+    setIsProfileComplete,
+    setNotifications,
+    setId,
+  } = useContext(UserContext);
 
-      useEffect(() => {
+  useEffect(() => {
     const mql = window.matchMedia?.('(prefers-color-scheme: dark)');
 
     const apply = () => {
@@ -86,91 +88,95 @@ function App() {
     };
   }, []);
 
-    useEffect(() => {
-        const validateToken = async () => {
-            const token = localStorage.getItem("unicru-token");
-            if (!token) return;
+  useEffect(() => {
+    const validateToken = async () => {
+      const token = localStorage.getItem("unicru-token");
+      if (!token) return;
 
-            try {
-                const res = await axiosInstance.get("/auth/authenticate", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+      try {
+        const res = await axiosInstance.get("/auth/authenticate", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-                const { name, role, profilePicture, isProfileComplete, _id } = res.data;
-                console.log(res.data, res.message)
-                setUsername(name);
-                setRole(role);
-                setProfilePicture(profilePicture);
-                setIsLoggedIn(true);
-                setIsProfileComplete(isProfileComplete);
-                setId(_id);
-                console.log("✅ Authenticated:", res.data);
+        const { name, role, profilePicture, isProfileComplete, _id } = res.data;
+        console.log(res.data, res.message)
+        setUsername(name);
+        setRole(role);
+        setProfilePicture(profilePicture);
+        setIsLoggedIn(true);
+        setIsProfileComplete(isProfileComplete);
+        setId(_id);
+        console.log("✅ Authenticated:", res.data);
 
-                // const currentRoot = location.pathname.split("/")[1];
-                // if (currentRoot !== role) {
-                //     navigate(`/${role}`, { replace: true });
-                // }
+        // const currentRoot = location.pathname.split("/")[1];
+        // if (currentRoot !== role) {
+        //     navigate(`/${role}`, { replace: true });
+        // }
 
-                if(role != "admin"){
+        if (role != "admin") {
 
-                  const resNotif = await axiosInstance.get(
-                      "/notification/notifications?page=1&limit=20"
-                  );
-                  setNotifications(resNotif.data.notifications);
-                }
+          const resNotif = await axiosInstance.get(
+            "/notification/notifications?page=1&limit=20"
+          );
+          setNotifications(resNotif.data.notifications);
+        }
 
-            } catch (err) {
-              console.log(err)
-                // console.warn("❌ Invalid token:", err.response?.data?.message || err.message);
-                localStorage.removeItem("unicru-token");
-            }
-        };
+      } catch (err) {
+        console.log(err)
+        // console.warn("❌ Invalid token:", err.response?.data?.message || err.message);
+        localStorage.removeItem("unicru-token");
+      }
+    };
 
-        validateToken();
-    }, []);
+    validateToken();
+  }, []);
 
-    return (
-        <>
-            <Toaster />
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/verify" element={<VerifyPage />} />
-                <Route path="/reverify" element={<ReverifyEmailPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
+  return (
 
-                {/* Admin Auth */}
-                <Route path="/auth/admin/login" element={<AdminLogin />} />
-                <Route path="/auth/admin/register" element={<AdminRegister />} />
+      <div id="app-shell">
+        <Navigation />
 
-                {/* User Auth */}
-                <Route path="/auth/user/login" element={<UserLogin />} />
-                <Route path="/auth/user/register" element={<UserRegister />} />
+        <Toaster />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/verify" element={<VerifyPage />} />
+          <Route path="/reverify" element={<ReverifyEmailPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-                {/* Company Auth */}
-                <Route path="/auth/company/login" element={<CompanyLogin />} />
-                <Route path="/auth/company/register" element={<CompanyRegister />} />
+          {/* Admin Auth */}
+          <Route path="/auth/admin/login" element={<AdminLogin />} />
+          <Route path="/auth/admin/register" element={<AdminRegister />} />
 
-                {/* admin */}
-                <Route path="/admin" element={<AdminHomePage />} />
-                <Route path="/admin/entry" element={<AdminDataEntryPage />} />
-                <Route path="/admin/users" element={<AdminUsersPage />} />
-                <Route path="/admin/companies" element={<AdminCompaniesPage />} />
-                <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+          {/* User Auth */}
+          <Route path="/auth/user/login" element={<UserLogin />} />
+          <Route path="/auth/user/register" element={<UserRegister />} />
 
-                {/* user */}
-                <Route path="/user" element={<UserHomePage />} />
-                <Route path="/user/profile" element={<UserProfilePage />} />
+          {/* Company Auth */}
+          <Route path="/auth/company/login" element={<CompanyLogin />} />
+          <Route path="/auth/company/register" element={<CompanyRegister />} />
 
-                {/* company */}
-                <Route path="/company" element={<CompanyHomePage />} />
-                <Route path="/company/profile" element={<CompanyProfilePage />} />
-                <Route path="/company/job/:jobId" element={<CompanyJobDetailPage />} />
-            </Routes>
-        </>
-    );
+          {/* admin */}
+          <Route path="/admin" element={<AdminHomePage />} />
+          <Route path="/admin/entry" element={<AdminDataEntryPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/companies" element={<AdminCompaniesPage />} />
+          <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+
+          {/* user */}
+          <Route path="/user" element={<UserHomePage />} />
+          <Route path="/user/profile" element={<UserProfilePage />} />
+
+          {/* company */}
+          <Route path="/company" element={<CompanyHomePage />} />
+          <Route path="/company/profile" element={<CompanyProfilePage />} />
+          <Route path="/company/job/:jobId" element={<CompanyJobDetailPage />} />
+        </Routes>
+        <Footer />
+      </div>
+  );
 }
 
 export default App;

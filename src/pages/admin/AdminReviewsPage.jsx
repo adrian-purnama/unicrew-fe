@@ -30,7 +30,6 @@ export default function AdminReviewsPage() {
 
   return (
     <>
-      <Navigation />
             <div className="bg-color-1">
 
       <div className="max-w-6xl mx-auto p-6 bg-color-1 min-h-[100vh] text-color">

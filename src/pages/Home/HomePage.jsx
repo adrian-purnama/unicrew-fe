@@ -95,7 +95,6 @@ const HomePage = () => {
 
     return (
         <>
-            <Navigation />
             <SecretAdminGate combo={{ altKey: true, shiftKey: true, key: "a" }} />
 
             <main className="min-h-screen bg-color-1">
@@ -354,8 +353,6 @@ const HomePage = () => {
                     </div>
                 </motion.section>
             </main>
-
-            <Footer />
         </>
     );
 };

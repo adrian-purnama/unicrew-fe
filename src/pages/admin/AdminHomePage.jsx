@@ -62,7 +62,6 @@ function CardLink({ to, title, subtitle, Icon, accent = "primary" }) {
 export default function AdminHomePage() {
   return (
     <>
-      <Navigation />
       <div className='bg-color-1'>
 
       <main className="mx-auto max-w-6xl p-6 space-y-8 bg-color-1">
@@ -140,7 +139,6 @@ export default function AdminHomePage() {
       </main>
       </div>
 
-      <Footer />
     </>
   );
 }

@@ -1,5 +1,5 @@
 // src/components/nav/Navigation.jsx
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bell, LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { Popover } from "@headlessui/react";
@@ -16,60 +16,75 @@ export default function Navigation() {
     setProfilePicture,
     isLoggedIn,
     setIsLoggedIn,
-    notifications,
+    notifications = [],
     setNotifications,
   } = useContext(UserContext);
 
-  // THEME STATE
-  // "system" | "light" | "dark" (persisted); default to "system" (device)
+  // ---------------- THEME ----------------
+  // "system" | "light" | "dark"
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
 
-  // Track OS preference so "system" can follow device changes
-  const [systemPrefersDark, setSystemPrefersDark] = useState(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return false;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
-  // Listen to OS changes
+  // Apply .dark on <html> based on user choice & OS preference
   useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e) => setSystemPrefersDark(e.matches);
-    mq.addEventListener?.("change", handler);
-    mq.addListener?.(handler); // Safari fallback
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!mq) return;
+
+    const apply = () => {
+      const choice = localStorage.getItem("theme") || "system";
+      const isDark = choice === "dark" || (choice === "system" && mq.matches);
+
+      const root = document.documentElement;
+      root.classList.toggle("dark", isDark);
+
+      // Optional: hint native controls (form fields) about color scheme
+      const meta = document.querySelector('meta[name="color-scheme"]');
+      if (meta) meta.setAttribute("content", isDark ? "dark light" : "light dark");
+    };
+
+    // Initial apply
+    apply();
+
+    // React to OS theme flips when in "system"
+    const onChange = () => {
+      if ((localStorage.getItem("theme") || "system") === "system") apply();
+    };
+
+    mq.addEventListener?.("change", onChange);
+    mq.addListener?.(onChange); // Safari fallback
+
+    // React to changes from other tabs/windows/components
+    const onStorage = (e) => {
+      if (e.key === "theme") apply();
+    };
+    window.addEventListener("storage", onStorage);
+
     return () => {
-      mq.removeEventListener?.("change", handler);
-      mq.removeListener?.(handler);
+      mq.removeEventListener?.("change", onChange);
+      mq.removeListener?.(onChange);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
-  // Effective theme: user choice unless "system"
-  const effectiveTheme = theme === "system" ? (systemPrefersDark ? "dark" : "light") : theme;
-
-  // Apply/remove .dark on <html>; set color-scheme meta for form controls
-  useEffect(() => {
-    const root = document.documentElement;
-    if (effectiveTheme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-
-    const meta = document.querySelector('meta[name="color-scheme"]');
-    if (meta) meta.setAttribute("content", effectiveTheme === "dark" ? "dark light" : "light dark");
-  }, [effectiveTheme]);
-
-  // Persist choice
+  // Persist & broadcast when user picks a theme
   useEffect(() => {
     localStorage.setItem("theme", theme);
+    // Broadcast so the apply() above re-runs immediately
+    window.dispatchEvent(new StorageEvent("storage", { key: "theme", newValue: theme }));
   }, [theme]);
 
-  // Cycle Light → Dark → System → Light …
-  const cycleTheme = () => {
+  // Cycle Light → Dark → System
+  const cycleTheme = () =>
     setTheme((prev) => (prev === "light" ? "dark" : prev === "dark" ? "system" : "light"));
-  };
 
-  // Icon reflects the current selection (system shows monitor)
+  // For the icon, show monitor when 'system'; otherwise show the opposite to hint the next state toggle
+  const effectiveTheme = useMemo(() => {
+    if (theme !== "system") return theme;
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }, [theme]);
+
   const IconToggle = theme === "system" ? Monitor : effectiveTheme === "light" ? Moon : Sun;
 
-  // --------- REST OF YOUR NAV ---------
+  // ---------------- NAV LOGIC ----------------
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -82,13 +97,13 @@ export default function Navigation() {
     navigate("/");
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter?.((n) => !n.isRead).length || 0;
 
   const markAllRead = async () => {
     try {
       await axiosInstance.patch("/notification/notifications/mark-all-read");
       const refreshed = await axiosInstance.get("/notification/notifications?page=1&limit=20");
-      setNotifications(refreshed.data.notifications);
+      setNotifications(refreshed.data.notifications || []);
     } catch (err) {
       console.error("❌ Failed to mark all as read:", err);
     }
@@ -103,19 +118,10 @@ export default function Navigation() {
     }
   };
 
-  const roleLinks = {
-    user: [{ to: "/user", label: "Dashboard" }],
-    company: [{ to: "/company", label: "Dashboard" }],
-    admin: [
-      { to: "/admin", label: "Dashboard" },
-      { to: "/admin/entry", label: "Data Entry" },
-    ],
-  };
-
   return (
-    <nav className="nav-container flex items-center justify-between px-6 py-3 border-gray border-b-1 bg-color-1">
+    <nav className="nav-container flex items-center justify-between px-6 py-3 border-b bg-color-1 border-gray">
       <div className="flex items-center justify-between w-full">
-        {/* Left */}
+        {/* Left: Logo */}
         <div className="flex items-center space-x-4">
           <img
             onClick={handleLogoClick}
@@ -125,14 +131,19 @@ export default function Navigation() {
           />
         </div>
 
-        {/* Right */}
+        {/* Right side */}
         {isLoggedIn ? (
           <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Theme Toggle */}
             <button
               type="button"
               onClick={cycleTheme}
-              title={`Theme: ${theme === "system" ? `System (${effectiveTheme})` : `${theme} (override)`}`}
+              title={`Theme: ${
+                theme === "system" ? `System (${effectiveTheme})` : `${theme} (override)`
+              }`}
               className="relative flex items-center justify-center w-9 h-9 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <IconToggle className="w-5 h-5" />
@@ -148,6 +159,7 @@ export default function Navigation() {
               <Popover.Button
                 type="button"
                 className="relative flex items-center justify-center w-9 h-9 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                title="Notifications"
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
@@ -189,8 +201,9 @@ export default function Navigation() {
               </Popover.Panel>
             </Popover>
 
+            {/* Profile & Logout */}
             <Link to={`/${role}/profile`} className="flex items-center gap-2">
-              <span className="text-sm">
+              <span className="text-sm notranslate">
                 {username?.split(" ")[0] || "User"} / {role || "guest"}
               </span>
               <img
@@ -214,11 +227,14 @@ export default function Navigation() {
           </div>
         ) : (
           <div className="flex items-center gap-2 sm:gap-3 text-sm">
-            {/* Theme Toggle (Guest) */}
+
+            {/* Theme Toggle (guest) */}
             <button
               type="button"
               onClick={cycleTheme}
-              title={`Theme: ${theme === "system" ? `System (${effectiveTheme})` : `${theme} (override)`}`}
+              title={`Theme: ${
+                theme === "system" ? `System (${effectiveTheme})` : `${theme} (override)`
+              }`}
               className="relative flex items-center justify-center w-9 h-9 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <IconToggle className="w-5 h-5" />
@@ -231,7 +247,7 @@ export default function Navigation() {
 
             <Link
               to="/auth/company/login"
-              className="px-4 py-2 text-color hover:border-gray-600 font-bold underline text-color"
+              className="px-4 py-2 font-bold underline text-color hover:border-gray-600"
             >
               For Employers
             </Link>

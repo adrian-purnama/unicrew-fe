@@ -239,7 +239,6 @@ export default function CompanyRegister() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen flex items-center justify-center bg-background text-text px-4 py-20 bg-color-1">
         <Toaster />
         <form
