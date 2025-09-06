@@ -190,7 +190,7 @@ export default function AdminResetPasswordPage() {
         {/* Reset modal (simple inline) */}
         {open && (
           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-900 text-color w-full max-w-md rounded-lg p-5 shadow-xl">
+            <div className="bg-color-2 text-color w-full max-w-md rounded-lg p-5 shadow-xl">
               <h2 className="text-lg font-semibold mb-3">Reset password</h2>
               <p className="text-sm text-gray mb-4">
                 Target: <b>{target?.name}</b> <span className="text-gray-400">({target?.email})</span>
