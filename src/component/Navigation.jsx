@@ -134,8 +134,6 @@ export default function Navigation() {
         {/* Right side */}
         {isLoggedIn ? (
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Language Switcher */}
-            <LanguageSwitcher />
 
             {/* Theme Toggle */}
             <button
