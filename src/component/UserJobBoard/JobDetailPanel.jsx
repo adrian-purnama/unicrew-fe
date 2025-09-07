@@ -183,7 +183,7 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
             {job.description && (
                 <div className="mb-4">
                     <strong className="text-color">Description:</strong>
-                    <p>{job.description}</p>
+                    <p className = "text-color">{job.description}</p>
                 </div>
             )}
 
