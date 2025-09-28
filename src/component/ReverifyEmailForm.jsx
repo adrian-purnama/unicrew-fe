@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../utils/ApiHelper";
 
-export default function ForgotPasswordForm({ role = "user" }) {
+export default function ReverifyEmailForm({ role = "user" }) {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
-  const [cooldown, setCooldown] = useState(0); // seconds remaining
+  const [cooldown, setCooldown] = useState(0); // seconds
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -25,15 +25,14 @@ export default function ForgotPasswordForm({ role = "user" }) {
     setSending(true);
     const toastId = toast.loading("Sending...");
     try {
-      await axiosInstance.post("/auth/forgot-password", { email, role });
+      await axiosInstance.post("/auth/reverify", { email, role });
       toast.dismiss(toastId);
-      toast.success("Reset link sent. Check your inbox (and spam).");
+      toast.success("Verification email sent. Check your inbox (and spam).");
       setCooldown(120); // 2 minutes cooldown
       setEmail("");
     } catch (err) {
       toast.dismiss(toastId);
-      toast.error(err?.response?.data?.message || "Failed to send reset email");
-      // Try deriving cooldown from rate limit headers (optional)
+      toast.error(err?.response?.data?.message || "Failed to send email");
       const hdrs = err?.response?.headers || {};
       const retry = parseInt(hdrs["retry-after"]) || parseInt(hdrs["x-ratelimit-reset"]);
       if (!Number.isNaN(retry) && retry > 0) setCooldown(retry);
@@ -64,7 +63,7 @@ export default function ForgotPasswordForm({ role = "user" }) {
           ? "Sending..."
           : cooldown > 0
           ? `Wait ${formatTime(cooldown)}`
-          : "Send Reset Link"}
+          : "Send Verification"}
       </button>
 
       {cooldown > 0 && (
@@ -75,4 +74,3 @@ export default function ForgotPasswordForm({ role = "user" }) {
     </form>
   );
 }
-

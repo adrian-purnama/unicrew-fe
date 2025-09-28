@@ -38,7 +38,7 @@ export default function useJobData() {
             });
 
             const response = await axiosInstance.get(`/job/job-feed?${params.toString()}`);
-            console.log(response.data)
+            // console.log(response.data)
             setJobs(response.data.jobs || []);
         } catch (err) {
             console.error("Error fetching jobs:", err);

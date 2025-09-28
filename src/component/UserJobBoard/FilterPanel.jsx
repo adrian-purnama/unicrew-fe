@@ -9,6 +9,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
         workType: [],
         skills: [],
         industries: [],
+        verified: false,
         location: {
             provinsi: "",
             kabupaten: "",
@@ -68,6 +69,7 @@ export default function FilterPanel({ filters = {}, onChange }) {
             ...out,
             skills: out.skills.map((s) => s.value),
             industries: out.industries.map((i) => i.value),
+            verified: out.verified ? true : undefined,
         });
 
         setIsMobileOpen(false);
@@ -105,125 +107,124 @@ export default function FilterPanel({ filters = {}, onChange }) {
         localFilters.workType.length +
         localFilters.skills.length +
         localFilters.industries.length +
+        (localFilters.verified ? 1 : 0) +
         (localFilters.location.provinsi ? 1 : 0) +
         (localFilters.minSalary ? 1 : 0);
 
     const content = (
-        <div className="space-y-5 text-color">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-color flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-primary" />
-                    Filter Jobs
-                </h2>
-                {activeFilterCount > 0 && (
-                    <span className="bg-primary text-white text-xs px-2 py-1 rounded-full font-medium">
-                        {activeFilterCount} active
-                    </span>
-                )}
+  <div className="space-y-5 text-color">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-lg font-bold text-color flex items-center gap-2">
+        <Filter className="w-5 h-5 text-primary" />
+        Filter Jobs
+      </h2>
+      {activeFilterCount > 0 && (
+        <span className="bg-primary text-white text-xs px-2 py-1 rounded-full font-medium">
+          {activeFilterCount} active
+        </span>
+      )}
+    </div>
+
+    {/* Work Type */}
+    <div className="bg-color-1 rounded-lg p-4 border border-gray">
+      <label className="font-semibold block mb-3 text-color flex items-center gap-2">
+        <span className="w-1 h-4 bg-primary rounded-full"></span>
+        Work Type
+      </label>
+      <div className="space-y-2">
+        {["onsite", "remote", "hybrid"].map((type) => (
+          <label key={type} className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={localFilters.workType.includes(type)}
+              onChange={() => handleWorkType(type)}
+              className="sr-only"
+            />
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+              localFilters.workType.includes(type)
+                ? 'bg-primary border-primary text-white'
+                : 'border-gray group-hover:border-primary'
+            }`}>
+              {localFilters.workType.includes(type) && (
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              )}
             </div>
+            <span className="capitalize text-sm group-hover:text-primary transition-colors">{type}</span>
+          </label>
+        ))}
+      </div>
+    </div>
 
-            {/* Work Type */}
-            <div className="bg-color-1 rounded-lg p-4 border border-gray">
-                <label className="font-semibold block mb-3 text-color flex items-center gap-2">
-                    <span className="w-1 h-4 bg-primary rounded-full"></span>
-                    Work Type
-                </label>
-                <div className="space-y-2">
-                    {["onsite", "remote", "hybrid"].map((type) => (
-                        <label key={type} className="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="checkbox"
-                                checked={localFilters.workType.includes(type)}
-                                onChange={() => handleWorkType(type)}
-                                className="sr-only"
-                            />
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${localFilters.workType.includes(type)
-                                    ? 'bg-primary border-primary text-white'
-                                    : 'border-gray group-hover:border-primary'
-                                }`}>
-                                {localFilters.workType.includes(type) && (
-                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                )}
-                            </div>
-                            <span className="capitalize text-sm group-hover:text-primary transition-colors">
-                                {type}
-                            </span>
-                        </label>
-                    ))}
-                </div>
-            </div>
+    {/* Skills */}
+    <div className="bg-color-1 rounded-lg p-4 border border-gray">
+      <label className="font-semibold block mb-3 text-color flex items-center gap-2">
+        <span className="w-1 h-4 bg-primary rounded-full"></span>
+        Skills
+      </label>
+      <SkillSelector
+        value={localFilters.skills}
+        onChange={(skills) => setLocalFilters((prev) => ({ ...prev, skills }))}
+      />
+    </div>
 
-            {/* Location */}
-            {/* <div className="bg-color-1 rounded-lg p-4 border border-gray">
-                <label className="font-semibold block mb-3 text-color flex items-center gap-2">
-                    <span className="w-1 h-4 bg-primary rounded-full"></span>
-                    Location
-                </label>
-                <LocationSelector
-                    value={localFilters.location}
-                    onChange={(location) => setLocalFilters((prev) => ({ ...prev, location }))}
-                />
-            </div> */}
+    {/* Industries */}
+    <div className="bg-color-1 rounded-lg p-4 border border-gray">
+      <label className="font-semibold block mb-3 text-color flex items-center gap-2">
+        <span className="w-1 h-4 bg-primary rounded-full"></span>
+        Industries
+      </label>
+      <IndustrySelector
+        value={localFilters.industries}
+        onChange={(industries) => setLocalFilters((prev) => ({ ...prev, industries }))}
+      />
+    </div>
 
-            {/* Skills */}
-            <div className="bg-color-1 rounded-lg p-4 border border-gray">
-                <label className="font-semibold block mb-3 text-color flex items-center gap-2">
-                    <span className="w-1 h-4 bg-primary rounded-full"></span>
-                    Skills
-                </label>
-                <SkillSelector
-                    value={localFilters.skills}
-                    onChange={(skills) => setLocalFilters((prev) => ({ ...prev, skills }))}
-                />
-            </div>
+    {/* Company */}
+    <div className="bg-color-1 rounded-lg p-4 border border-gray">
+      <label className="font-semibold block mb-3 text-color flex items-center gap-2">
+        <span className="w-1 h-4 bg-primary rounded-full"></span>
+        Company
+      </label>
+      <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
+        <input
+          type="checkbox"
+          className="accent-primary"
+          checked={!!localFilters.verified}
+          onChange={(e) => setLocalFilters((prev) => ({ ...prev, verified: e.target.checked }))}
+        />
+        <span className="text-color">Verified companies only</span>
+      </label>
+    </div>
 
-            {/* Industries */}
-            {/* <div className="bg-color-1 rounded-lg p-4 border border-gray">
-                <label className="font-semibold block mb-3 text-color flex items-center gap-2">
-                    <span className="w-1 h-4 bg-primary rounded-full"></span>
-                    Industries
-                </label>
-                <IndustrySelector
-                    value={localFilters.industries}
-                    onChange={(industries) => setLocalFilters((prev) => ({ ...prev, industries }))}
-                />
-            </div> */}
+    {/* Minimum Salary */}
+    <div className="bg-color-1 rounded-lg p-4 border border-gray">
+      <label className="font-semibold block mb-3 text-color flex items-center gap-2">
+        <span className="w-1 h-4 bg-primary rounded-full"></span>
+        Minimum Salary
+      </label>
+      <input
+        type="number"
+        name="minSalary"
+        value={localFilters.minSalary}
+        onChange={handleInput}
+        className="w-full border border-gray p-3 rounded-lg bg-color-2 text-color focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+        placeholder="e.g. 5000000"
+      />
+    </div>
 
-            {/* Minimum Salary */}
-            <div className="bg-color-1 rounded-lg p-4 border border-gray">
-                <label className="font-semibold block mb-3 text-color flex items-center gap-2">
-                    <span className="w-1 h-4 bg-primary rounded-full"></span>
-                    Minimum Salary
-                </label>
-                <input
-                    type="number"
-                    name="minSalary"
-                    value={localFilters.minSalary}
-                    onChange={handleInput}
-                    className="w-full border border-gray p-3 rounded-lg bg-color-2 text-color focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                    placeholder="e.g. 5000000"
-                />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-4 sticky bottom-[-20px] bg-color-2 -mx-4 px-4 pb-4 bg-color-2">
-                <button
-                    onClick={handleSubmit}
-                    className="btn-primary text-white font-bold px-4 py-2.5 rounded-lg flex-1 shadow-md hover:shadow-lg transition-all"
-                >
-                    Apply Filters
-                </button>
-                <button
-                    onClick={handleClear}
-                    className="bg-color-1 text-gray border border-gray px-4 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-                >
-                    Clear
-                </button>
-            </div>
-        </div>
-    );
+    {/* Action Buttons */}
+    <div className="flex gap-3 pt-4 sticky bottom-[-20px] bg-color-2 -mx-4 px-4 pb-4 bg-color-2">
+      <button onClick={handleSubmit} className="btn-primary text-white font-bold px-4 py-2.5 rounded-lg flex-1 shadow-md hover:shadow-lg transition-all">
+        Apply Filters
+      </button>
+      <button onClick={handleClear} className="bg-color-1 text-gray border border-gray px-4 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+        Clear
+      </button>
+    </div>
+  </div>
+);
 
     return (
         <>
@@ -273,3 +274,5 @@ export default function FilterPanel({ filters = {}, onChange }) {
         </>
     );
 }
+
+

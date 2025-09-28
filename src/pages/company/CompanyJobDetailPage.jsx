@@ -82,6 +82,19 @@ export default function CompanyJobDetailPage() {
     fetchData();
   }, [jobId]);
 
+  // Open protected asset URL by fetching as blob and opening in new tab
+  const openProtected = async (url, filename = "file") => {
+    try {
+      const res = await axiosInstance.get(url, { responseType: "blob" });
+      const blobUrl = URL.createObjectURL(res.data);
+      const w = window.open(blobUrl, "_blank");
+      if (!w) window.location.href = blobUrl;
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } catch (e) {
+      toast.error("Failed to open file");
+    }
+  };
+
   const toggleSelect = (userId) => {
     setSelected((prev) =>
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]

@@ -14,6 +14,7 @@ import AcceptedJobs from "./AcceptedJobs";
 import SavedJobs from "./SavedJobs";
 import useIsNonDesktop from "../../../utils/useIsNonDesktop";
 import PendingReview from "./PendingReview";
+import Tools from "./Tools";
 import { emitApplicationsUpdated } from "../../../utils/appEvent";
 import { UserContext } from "../../../utils/UserContext";
 
@@ -265,6 +266,7 @@ export default function JobBoardLayout({ setActiveChatRoom }) {
             {activeTab === "pending" && <PendingJobs setActiveChatRoom={setActiveChatRoom} />}
             {activeTab === "accepted" && <AcceptedJobs setActiveChatRoom={setActiveChatRoom} />}
             {activeTab === "review" && <PendingReview />}
+            {activeTab === "tools" && <Tools />}
         </div>
     );
 }

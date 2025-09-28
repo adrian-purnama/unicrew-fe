@@ -27,6 +27,8 @@ import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
 import Navigation from "./component/Navigation";
 import Footer from "./component/Footer";
 import AdminResetPasswordPage from "./pages/admin/AdminResetPasswordPage";
+import AdminJobsPage from "./pages/admin/AdminJobsPage";
+import CVMakerPage from "./pages/CVMakerPage";
 
 function App() {
   const {
@@ -102,7 +104,7 @@ function App() {
         });
 
         const { name, role, profilePicture, isProfileComplete, _id } = res.data;
-        console.log(res.data, res.message)
+        console.log(res)
         setUsername(name);
         setRole(role);
         setProfilePicture(profilePicture);
@@ -126,8 +128,11 @@ function App() {
 
       } catch (err) {
         console.log(err)
-        // console.warn("❌ Invalid token:", err.response?.data?.message || err.message);
-        localStorage.removeItem("unicru-token");
+        if(err){
+console.log(err)
+        }else{
+          localStorage.removeItem("unicru-token");
+        }
       }
     };
 
@@ -165,8 +170,8 @@ function App() {
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/companies" element={<AdminCompaniesPage />} />
           <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+          <Route path="/admin/jobs" element={<AdminJobsPage />} />
           <Route path="/admin/resetpassword" element={<AdminResetPasswordPage />} />
-
           {/* user */}
           <Route path="/user" element={<UserHomePage />} />
           <Route path="/user/profile" element={<UserProfilePage />} />
@@ -175,6 +180,9 @@ function App() {
           <Route path="/company" element={<CompanyHomePage />} />
           <Route path="/company/profile" element={<CompanyProfilePage />} />
           <Route path="/company/job/:jobId" element={<CompanyJobDetailPage />} />
+
+          {/* CV Maker */}
+          <Route path="/cv-maker" element={<CVMakerPage />} />
         </Routes>
         <Footer />
       </div>

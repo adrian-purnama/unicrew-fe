@@ -9,10 +9,11 @@ import {
   ShieldCheck,
   Wrench,
   EyeClosed,
+  Briefcase,
 } from 'lucide-react';
 import Footer from '../../component/Footer';
 
-function CardLink({ to, title, subtitle, Icon, accent = "primary" }) {
+function CardLink({ to, title, subtitle, Icon }) {
   return (
     <Link
       to={to}
@@ -107,16 +108,16 @@ export default function AdminHomePage() {
               Icon={Star}
             />
             <CardLink
+              to="/admin/jobs"
+              title="Job Management"
+              subtitle="View job posts and manage applications with status tracking."
+              Icon={Briefcase}
+            />
+            <CardLink
               to="/admin/entry"
               title="Data Entry"
               subtitle="Locations, skills, industries, study programs, universities."
               Icon={Database}
-            />
-            <CardLink
-              to="/admin/entry"
-              title="Location Sync"
-              subtitle="Run Indonesia Provinsi/Kabupaten/Kecamatan sync."
-              Icon={Wrench}
             />
             <CardLink
               to="/admin/resetpassword"

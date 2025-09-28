@@ -1,5 +1,5 @@
 // TabHeader.jsx — ultra-subtle Pending breakdown (hover/tap to reveal)
-import { Bookmark, Menu, Info } from "lucide-react";
+import { Bookmark, Menu, Info, Wrench } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../../../utils/ApiHelper";
 import { APP_EVENTS } from "../../../utils/appEvent";
@@ -11,6 +11,7 @@ export default function TabHeader({ activeTab, onChange, autoRefresh = true }) {
     { key: "pending", label: "Pending" },             // badge + tiny info dot
     { key: "accepted", label: "Accepted" },
     { key: "review", label: "Review" },
+    { key: "tools", label: "Tools", icon: Wrench },    // Tools tab
   ];
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -164,28 +165,48 @@ useEffect(() => {
       )}
 
       {/* Desktop tabs */}
-      <div className="hidden sm:flex gap-6 border-b border-gray-300 pb-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => onChange(tab.key)}
-            className={`pb-2 relative font-medium transition-colors duration-200 flex items-center gap-2 ${activeTab === tab.key
-                ? "text-primary after:content-[''] after:absolute after:-bottom-[1px] after:left-0 after:w-full after:h-0.5 after:bg-primary"
-                : "text-gray-500 hover:text-gray-700"
-              }`}
-            // native title for the smallest footprint possible
-            title={
-              tab.key === "pending" && counts.pending > 0
-                ? `Applied: ${counts.applied} • Shortlisted: ${counts.shortListed}`
-                : undefined
-            }
-          >
-            {tab.icon && <tab.icon className="w-4 h-4" />}
-            <span>{tab.label}</span>
-            {mainBadge(tab.key)}
-            {tab.key === "pending" && <PendingInfo />}
-          </button>
-        ))}
+      <div className="hidden sm:flex justify-between items-end border-b border-gray-300 pb-2">
+        {/* Main tabs on the left */}
+        <div className="flex gap-6">
+          {tabs.filter(tab => tab.key !== 'tools').map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => onChange(tab.key)}
+              className={`pb-2 relative font-medium transition-colors duration-200 flex items-center gap-2 ${activeTab === tab.key
+                  ? "text-primary after:content-[''] after:absolute after:-bottom-[1px] after:left-0 after:w-full after:h-0.5 after:bg-primary"
+                  : "text-gray-500 hover:text-gray-700"
+                }`}
+              // native title for the smallest footprint possible
+              title={
+                tab.key === "pending" && counts.pending > 0
+                  ? `Applied: ${counts.applied} • Shortlisted: ${counts.shortListed}`
+                  : undefined
+              }
+            >
+              {tab.icon && <tab.icon className="w-4 h-4" />}
+              <span>{tab.label}</span>
+              {mainBadge(tab.key)}
+              {tab.key === "pending" && <PendingInfo />}
+            </button>
+          ))}
+        </div>
+        
+        {/* Tools tab alone on the right */}
+        <div className="flex">
+          {tabs.filter(tab => tab.key === 'tools').map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => onChange(tab.key)}
+              className={`pb-2 relative font-medium transition-colors duration-200 flex items-center gap-2 ${activeTab === tab.key
+                  ? "text-primary after:content-[''] after:absolute after:-bottom-[1px] after:left-0 after:w-full after:h-0.5 after:bg-primary"
+                  : "text-gray-500 hover:text-gray-700"
+                }`}
+            >
+              {tab.icon && <tab.icon className="w-4 h-4" />}
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,10 +1,11 @@
 // src/components/nav/Navigation.jsx
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, LogOut, Sun, Moon, Monitor } from "lucide-react";
+import { Bell, LogOut, Sun, Moon, Monitor, MoreHorizontal, FileText } from "lucide-react";
 import { Popover } from "@headlessui/react";
 import axiosInstance from "../../utils/ApiHelper";
 import { UserContext } from "../../utils/UserContext";
+import ProtectedImage from "./ProtectedImage";
 
 export default function Navigation() {
   const {
@@ -204,13 +205,11 @@ export default function Navigation() {
               <span className="text-sm notranslate">
                 {username?.split(" ")[0] || "User"} / {role || "guest"}
               </span>
-              <img
-                src={
-                  profilePicture ||
-                  "https://cdn.vectorstock.com/i/500p/58/15/male-silhouette-profile-picture-vector-35845815.jpg"
-                }
+              <ProtectedImage
+                src={profilePicture}
                 alt="profile"
                 className="avatar size-6"
+                fallback="https://cdn.vectorstock.com/i/500p/58/15/male-silhouette-profile-picture-vector-35845815.jpg"
               />
             </Link>
 

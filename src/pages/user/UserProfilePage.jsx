@@ -9,6 +9,7 @@ import LocationSelector from "../../component/LocationSelector";
 import BaseModal from "../../component/BaseModal";
 import { useNavigate } from "react-router-dom";
 import SkillComposer from "../../component/SkillComposer";
+import { ShieldCheck, ShieldX, CheckCircle, XCircle } from "lucide-react";
 
 const UserProfilePage = () => {
   const { profilePicture } = useContext(UserContext);
@@ -205,10 +206,58 @@ const UserProfilePage = () => {
         {/* Page header */}
         <section className="border border-gray border-l-0 border-r-0 bg-color-2 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold tracking-tight text-color">Your Profile</h1>
-            <p className="mt-1 text-sm text-gray">
-              Keep your information up to date to get better job matches.
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight text-color">Your Profile</h1>
+                <p className="mt-1 text-sm text-gray">
+                  Keep your information up to date to get better job matches.
+                </p>
+              </div>
+              
+              {/* Verification Status */}
+              {profile && (
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-center gap-2">
+                    {/* Email Verification */}
+                    <div className="flex items-center gap-1">
+                      {profile.isVerified ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Email Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                          <XCircle className="w-3 h-3 mr-1" />
+                          Email Unverified
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Admin Verification */}
+                    <div className="flex items-center gap-1">
+                      {profile.trust?.verified ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                          <ShieldCheck className="w-3 h-3 mr-1" />
+                          Admin Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                          <ShieldX className="w-3 h-3 mr-1" />
+                          Not Admin Verified
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Verification Notes */}
+                  {profile.trust?.verified && profile.trust?.notes && (
+                    <div className="text-xs text-gray-500 max-w-xs text-right">
+                      Admin note: {profile.trust.notes}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
