@@ -120,9 +120,16 @@ const UserProfilePage = () => {
   // ---- submit ----
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate aboutMe length
+    if (form.aboutMe && form.aboutMe.length > 1000) {
+      toast.error("About section cannot exceed 1000 characters.");
+      return;
+    }
+    
     const formData = new FormData();
 
-    if (form.aboutMe) formData.append("aboutMe", form.aboutMe);
+    if (form.aboutMe) formData.append("aboutMe", form.aboutMe.trim());
     if (form.fullName) formData.append("fullName", form.fullName);
     if (form.skills?.length) form.skills.forEach((s) => formData.append("skills", s.value));
 
@@ -311,12 +318,37 @@ const UserProfilePage = () => {
                 <p className="text-sm text-gray">Tell companies a bit about yourself.</p>
               </div>
 
-              <textarea
-                name="aboutMe"
-                value={form.aboutMe || ""}
-                onChange={handleChange}
-                className="w-full h-32 rounded-lg border border-gray bg-color-1 text-color px-3 py-2 outline-none focus:ring-2 focus:ring-[rgb(var(--color-primary))]"
-              />
+              <div className="relative">
+                <textarea
+                  name="aboutMe"
+                  value={form.aboutMe || ""}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 1000) {
+                      handleChange(e);
+                    }
+                  }}
+                  placeholder="Describe your background, interests, and what makes you unique..."
+                  className={`w-full h-32 rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-[rgb(var(--color-primary))] resize-none transition-colors ${
+                    (form.aboutMe || "").length > 1000 
+                      ? "border-red-300 bg-red-50" 
+                      : (form.aboutMe || "").length > 800 
+                        ? "border-yellow-300 bg-yellow-50" 
+                        : "border-gray bg-color-1"
+                  } text-color`}
+                />
+                <div className={`absolute bottom-2 right-2 text-xs px-2 py-1 rounded ${
+                  (form.aboutMe || "").length > 1000 
+                    ? "bg-red-100 text-red-600" 
+                    : (form.aboutMe || "").length > 800 
+                      ? "bg-yellow-100 text-yellow-600" 
+                      : "bg-gray-100 text-gray-500"
+                }`}>
+                  {(form.aboutMe || "").length}/1000
+                </div>
+              </div>
+              {(form.aboutMe || "").length > 1000 && (
+                <p className="text-red-500 text-sm">Character limit exceeded. Please reduce your text.</p>
+              )}
             </section>
 
             <hr className="border-gray" />

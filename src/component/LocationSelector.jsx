@@ -83,7 +83,7 @@ export default function LocationSelector({ value = {}, onChange }) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="font-semibold block mb-1">Provinsi</label>
+        <label className="font-semibold block mb-1 text-color">Provinsi</label>
         <Select
           options={options.provinsi}
           value={selectedValues.provinsi}
@@ -97,7 +97,7 @@ export default function LocationSelector({ value = {}, onChange }) {
       </div>
 
       <div>
-        <label className="font-semibold block mb-1">Kabupaten</label>
+        <label className="font-semibold block mb-1 text-color">Kabupaten</label>
         <Select
           options={options.kabupaten}
           value={selectedValues.kabupaten}
@@ -112,7 +112,7 @@ export default function LocationSelector({ value = {}, onChange }) {
       </div>
 
       <div>
-        <label className="font-semibold block mb-1">Kecamatan</label>
+        <label className="font-semibold block mb-1 text-color">Kecamatan</label>
         <Select
           options={options.kecamatan}
           value={selectedValues.kecamatan}

@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { FileText, Wand2, Plus, Trash2, Save, X, Edit3, Briefcase, GraduationCap, Wrench, Award, Languages, Calendar, Zap, BarChart3, Target, PenTool, Bot, Trophy, BookOpen, Star, TrendingUp, Globe, Scroll, CheckCircle, Building, XCircle, Hash, Monitor, Link } from 'lucide-react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
+import { FileText, Wand2, Plus, Trash2, Save, X, Edit3, Briefcase, GraduationCap, Wrench, Award, Languages, Calendar, Zap, BarChart3, Target, PenTool, Bot, Trophy, BookOpen, Star, TrendingUp, Globe, Scroll, CheckCircle, Building, XCircle, Hash, Monitor, Link, Clock, ExternalLink, Download, RefreshCw, Eye } from 'lucide-react';
 import { UserContext } from '../../utils/UserContext';
 import BaseModal from '../component/BaseModal';
 import Select from 'react-select';
@@ -31,11 +31,312 @@ export default function CVMakerPage() {
   const [currentTipType, setCurrentTipType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
-  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [cvResult, setCvResult] = useState(null);
   const [showDownload, setShowDownload] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completionMessage, setCompletionMessage] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [pollingStatus, setPollingStatus] = useState(null);
+  
+  // CV Management states
+  const [userCVs, setUserCVs] = useState([]);
+  const [loadingCVs, setLoadingCVs] = useState(false);
+  const [selectedCV, setSelectedCV] = useState(null);
+  const [showCVDetails, setShowCVDetails] = useState(false);
 
+  // CV API Functions
+  const submitCV = async (cvData) => {
+    try {
+      console.log('Submitting CV data:', cvData);
+      
+      const response = await axiosInstance.post('/cv/submit', {
+        cvData: cvData
+      });
+      
+      console.log('CV submission response:', response.data);
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          cvResultId: response.data.cvResultId,
+          downloadUrl: response.data.downloadUrl,
+          expiresAt: response.data.expiresAt,
+          minutesRemaining: response.data.minutesRemaining,
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message || 'CV submission failed');
+      }
+    } catch (error) {
+      console.error('CV submission error:', error);
+      
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Failed to submit CV. Please try again.');
+      }
+    }
+  };
+
+  const checkCVStatus = async (cvResultId) => {
+    try {
+      console.log('Checking CV status for ID:', cvResultId);
+      
+      const response = await axiosInstance.get(`/cv/status/${cvResultId}`);
+      
+      console.log('CV status response:', response.data);
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          cvResultId: response.data.cvResultId,
+          status: response.data.status,
+          expiresAt: response.data.expiresAt,
+          minutesRemaining: response.data.minutesRemaining,
+          isExpired: response.data.isExpired,
+          downloadCount: response.data.downloadCount,
+          lastDownloadedAt: response.data.lastDownloadedAt,
+          errorMessage: response.data.errorMessage,
+          createdAt: response.data.createdAt,
+          updatedAt: response.data.updatedAt
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to check CV status');
+      }
+    } catch (error) {
+      console.error('CV status check error:', error);
+      
+      if (error.response?.status === 404) {
+        throw new Error('CV not found or expired');
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error('Failed to check CV status');
+      }
+    }
+  };
+
+  const downloadCV = async (cvResultId, filename = 'CV.pdf') => {
+    try {
+      console.log('Downloading CV with ID:', cvResultId);
+      
+      // First check the CV status to ensure it's ready for download
+      const statusResponse = await checkCVStatus(cvResultId);
+      if (statusResponse.status !== 'completed') {
+        throw new Error(`CV is still ${statusResponse.status}. Please wait and try again.`);
+      }
+      
+      // Check if CV has expired
+      if (statusResponse.isExpired || statusResponse.minutesRemaining <= 0) {
+        throw new Error('CV has expired and is no longer available for download');
+      }
+      
+      const response = await axiosInstance.get(`/cv/download/${cvResultId}`, {
+        responseType: 'blob'
+      });
+      
+      console.log('CV download response:', response);
+      console.log('Response data:', response.data);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data size:', response.data?.size);
+      console.log('Response headers:', response.headers);
+      
+      // Validate that we received actual PDF data
+      if (!response.data || response.data.size === 0) {
+        console.error('Invalid response data:', {
+          hasData: !!response.data,
+          dataType: typeof response.data,
+          dataSize: response.data?.size,
+          dataConstructor: response.data?.constructor?.name
+        });
+        throw new Error('Received empty or invalid PDF data');
+      }
+      
+      // Create blob URL and trigger download
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      return {
+        success: true,
+        message: 'CV downloaded successfully'
+      };
+    } catch (error) {
+      console.error('CV download error:', error);
+      
+      if (error.response?.status === 404) {
+        throw new Error('CV not found or has expired');
+      } else if (error.response?.status === 400) {
+        throw new Error('CV is still being generated. Please wait and try again.');
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Failed to download CV');
+      }
+    }
+  };
+
+  const listUserCVs = async (page = 1, limit = 10) => {
+    try {
+      console.log('Listing user CVs, page:', page, 'limit:', limit);
+      
+      const response = await axiosInstance.get('/cv/list', {
+        params: {
+          page: page,
+          limit: limit
+        }
+      });
+      
+      console.log('CV list response:', response.data);
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          cvs: response.data.cvs,
+          pagination: response.data.pagination
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to list CVs');
+      }
+    } catch (error) {
+      console.error('CV list error:', error);
+      
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error('Failed to list CVs');
+      }
+    }
+  };
+
+  const pollCVStatus = async (cvResultId, onStatusUpdate = null, maxAttempts = 30) => {
+    let attempts = 0;
+    
+    const poll = async () => {
+      try {
+        attempts++;
+        const status = await checkCVStatus(cvResultId);
+        
+        if (onStatusUpdate) {
+          onStatusUpdate(status);
+        }
+        
+        // Check if generation is complete or failed
+        if (status.status === 'completed' || status.status === 'failed' || status.isExpired) {
+          return status;
+        }
+        
+        // If max attempts reached, return current status
+        if (attempts >= maxAttempts) {
+          console.warn('Max polling attempts reached');
+          return status;
+        }
+        
+        // Wait 2 seconds before next poll
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return poll();
+        
+      } catch (error) {
+        console.error('Polling error:', error);
+        throw error;
+      }
+    };
+    
+    return poll();
+  };
+
+  // Utility functions
+  const formatTimeRemaining = (minutesRemaining) => {
+    if (minutesRemaining <= 0) {
+      return 'Expired';
+    } else if (minutesRemaining < 60) {
+      return `${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''} remaining`;
+    } else {
+      const hours = Math.floor(minutesRemaining / 60);
+      const minutes = minutesRemaining % 60;
+      return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''} remaining`;
+    }
+  };
+
+  const canDownloadCV = (status, isExpired) => {
+    return status === 'completed' && !isExpired;
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'generating':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'completed':
+        return 'text-green-600 bg-green-100';
+      case 'failed':
+        return 'text-red-600 bg-red-100';
+      case 'expired':
+        return 'text-gray-600 bg-gray-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'generating':
+        return '⏳';
+      case 'completed':
+        return '✅';
+      case 'failed':
+        return '❌';
+      case 'expired':
+        return '⏰';
+      default:
+        return '❓';
+    }
+  };
+
+  // Load user CVs
+  const loadUserCVs = useCallback(async () => {
+    try {
+      setLoadingCVs(true);
+      const response = await listUserCVs(1, 20);
+      if (response.success) {
+        setUserCVs(response.cvs);
+      }
+    } catch (error) {
+      console.error('Failed to load CVs:', error);
+    } finally {
+      setLoadingCVs(false);
+    }
+  }, []);
+
+  // Load CVs on component mount
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadUserCVs();
+    }
+  }, [isLoggedIn, loadUserCVs]);
+
+  // Auto-refresh CV list every 30 seconds to update expiration status
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const interval = setInterval(() => {
+      loadUserCVs();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [isLoggedIn, loadUserCVs]);
 
   // Redirect if not logged in
   if (!isLoggedIn) {
@@ -272,10 +573,12 @@ export default function CVMakerPage() {
       setIsSubmitting(true);
       setSubmitProgress(0);
       setShowDownload(false);
+      setCvResult(null);
+      setPollingStatus(null);
       
       console.log('Submitting CV data:', cvData);
       
-      // Simulate progress
+      // Start progress simulation
       const progressInterval = setInterval(() => {
         setSubmitProgress(prev => {
           if (prev >= 90) {
@@ -286,36 +589,94 @@ export default function CVMakerPage() {
         });
       }, 200);
       
-      const response = await axiosInstance.post('/cv/submit', {
-        cvData: cvData
-      });
+      // Submit CV data
+      const result = await submitCV(cvData);
       
       clearInterval(progressInterval);
       setSubmitProgress(100);
       
-      console.log('CV submission response:', response.data);
+      console.log('CV submission result:', result);
       
-      if (response.data.success && response.data.downloadUrl) {
-        setDownloadUrl(response.data.downloadUrl);
+      if (result.success) {
+        setCvResult(result);
+        
+        // Start polling for status updates
+        setPollingStatus('generating');
+        
+        try {
+          const finalStatus = await pollCVStatus(result.cvResultId, (status) => {
+            setPollingStatus(status.status);
+            setSubmitProgress(prev => Math.min(prev + 5, 95));
+          });
+          
+          setCvResult(finalStatus);
+          
+          if (finalStatus.status === 'completed') {
         setShowDownload(true);
         setCompletionMessage('CV generated successfully! You can now download your PDF.');
         setShowCompletionModal(true);
+            // Refresh CV list
+            loadUserCVs();
+          } else if (finalStatus.status === 'failed') {
+            setCompletionMessage(`CV generation failed: ${finalStatus.errorMessage || 'Unknown error'}`);
+            setShowCompletionModal(true);
+          }
+          
+        } catch (pollError) {
+          console.error('Polling error:', pollError);
+          setCompletionMessage('CV submitted but status check failed. Please check your CVs below.');
+          setShowCompletionModal(true);
+        }
       } else {
-        setCompletionMessage('CV submitted successfully! Check console for details.');
+        setCompletionMessage(result.message || 'CV submission failed.');
         setShowCompletionModal(true);
       }
       
     } catch (error) {
       console.error('Failed to submit CV:', error);
-      setCompletionMessage('Failed to submit CV. Please try again.');
+      setCompletionMessage(error.message || 'Failed to submit CV. Please try again.');
       setShowCompletionModal(true);
     } finally {
       setIsSubmitting(false);
       setTimeout(() => {
         setSubmitProgress(0);
+        setPollingStatus(null);
       }, 2000);
     }
   };
+
+  const handleDownload = async () => {
+    if (!cvResult?.cvResultId) return;
+    
+    try {
+      setIsDownloading(true);
+      await downloadCV(cvResult.cvResultId, cvResult.filename || 'CV.pdf');
+      // Refresh CV list to update download count
+      loadUserCVs();
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert(`Download failed: ${error.message}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadCV = async (cv) => {
+    try {
+      await downloadCV(cv.cvResultId, cv.filename);
+      // Refresh CV list to update download count
+      loadUserCVs();
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert(`Download failed: ${error.message}`);
+    }
+  };
+
+  const showCVDetailsModal = (cv) => {
+    setSelectedCV(cv);
+    setShowCVDetails(true);
+  };
+
 
   const renderPersonalInfo = () => (
     <div className="bg-color-2 rounded-lg p-6 mb-6">
@@ -899,23 +1260,70 @@ export default function CVMakerPage() {
               </div>
             )}
             
-            {showDownload && downloadUrl && (
+            {showDownload && cvResult && (
               <div className="flex flex-col items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
                   <CheckCircle className="w-5 h-5" />
                   <span className="font-medium">PDF Ready for Download!</span>
                 </div>
                 <p className="text-sm text-green-700 dark:text-green-300 text-center">
-                  Your CV has been generated successfully. Download will be available for 10 minutes.
+                  Your CV has been generated successfully. Download will be available for {cvResult.minutesRemaining || 30} minutes.
                 </p>
-                <a
-                  href={downloadUrl}
-                  download
-                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                {cvResult.expiresAt && (
+                  <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                    <Clock className="w-4 h-4" />
+                    <span>Expires: {new Date(cvResult.expiresAt).toLocaleString()}</span>
+                  </div>
+                )}
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
+                  {isDownloading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
                   <FileText className="w-5 h-5" />
                   Download PDF
-                </a>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => window.scrollTo({ top: document.querySelector('.cv-management-section').offsetTop - 100, behavior: 'smooth' })}
+                  className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View All My CVs
+                </button>
+              </div>
+            )}
+
+            {/* Generation Status */}
+            {pollingStatus && pollingStatus === 'generating' && (
+              <div className="flex flex-col items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                  <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="font-medium">Generating PDF...</span>
+                </div>
+                <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                  Your CV is being processed. This usually takes 10-30 seconds.
+                </p>
+                <div className="w-full max-w-xs">
+                  <div className="flex justify-between text-xs text-blue-600 dark:text-blue-400 mb-1">
+                    <span>Processing...</span>
+                    <span>{submitProgress}%</span>
+                  </div>
+                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${submitProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
               </div>
             )}
             
@@ -942,6 +1350,124 @@ export default function CVMakerPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* CV Management Section */}
+      <div className="bg-color-2 rounded-lg p-6 mt-8 cv-management-section">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-color">My CVs</h2>
+            <p className="text-gray mt-1">View and manage all your generated CVs</p>
+          </div>
+          <button
+            onClick={loadUserCVs}
+            disabled={loadingCVs}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 ${loadingCVs ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+
+        {loadingCVs ? (
+          <div className="text-center py-8">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray">Loading your CVs...</p>
+          </div>
+        ) : userCVs.length === 0 ? (
+          <div className="text-center py-12">
+            <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-color mb-2">No CVs Found</h3>
+            <p className="text-gray mb-6">You haven't created any CVs yet. Create your first professional CV above!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userCVs.map((cv) => (
+              <div key={cv.cvResultId} className="bg-color-1 rounded-lg border border-gray p-6 hover:shadow-lg transition-shadow">
+                {/* CV Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-color mb-1 truncate">
+                      {cv.filename || 'CV Document'}
+                    </h3>
+                    <p className="text-sm text-gray">
+                      {cv.fileSize ? `${Math.round(cv.fileSize / 1024)} KB` : 'Unknown size'}
+                    </p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(cv.status)}`}>
+                    <span>{getStatusIcon(cv.status)}</span>
+                    {cv.status.charAt(0).toUpperCase() + cv.status.slice(1)}
+                  </span>
+                </div>
+
+                {/* CV Details */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray">
+                    <Calendar className="w-4 h-4" />
+                    <span>Created: {new Date(cv.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  
+                  {cv.expiresAt && (
+                    <div className="flex items-center gap-2 text-sm text-gray">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatTimeRemaining(cv.minutesRemaining)}</span>
+                    </div>
+                  )}
+                  
+                  {cv.downloadCount > 0 && (
+                    <div className="flex items-center gap-2 text-sm text-gray">
+                      <Download className="w-4 h-4" />
+                      <span>Downloaded {cv.downloadCount} time{cv.downloadCount !== 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* CV Actions */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => showCVDetailsModal(cv)}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Details
+                  </button>
+                  
+                  {canDownloadCV(cv.status, cv.isExpired) ? (
+                    <button
+                      onClick={() => handleDownloadCV(cv)}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-400 text-gray-200 rounded-lg cursor-not-allowed"
+                    >
+                      {cv.status === 'generating' ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                          Generating...
+                        </>
+                      ) : cv.status === 'failed' ? (
+                        <>
+                          <XCircle className="w-4 h-4" />
+                          Failed
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="w-4 h-4" />
+                          Expired
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Tip Modal */}
@@ -1206,41 +1732,243 @@ export default function CVMakerPage() {
       <BaseModal 
         isOpen={showCompletionModal} 
         onClose={() => setShowCompletionModal(false)} 
-        title="CV Status"
+        title=""
       >
-        <div className="p-6 text-center">
-          <div className="mb-4">
-            {completionMessage.includes('successfully') ? (
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            ) : (
-              <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            )}
-          </div>
-          
-          <p className="text-lg mb-6 text-gray-700">
-            {completionMessage}
-          </p>
-          
-          {downloadUrl && (
-            <div className="mb-4">
-              <a
-                href={downloadUrl}
-                download
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <FileText className="w-5 h-5 mr-2" />
-                Download PDF
-              </a>
+        <div className="text-center py-6">
+          {/* Success State */}
+          {completionMessage.includes('successfully') ? (
+            <div className="space-y-6">
+              {/* Success Icon with Animation */}
+              <div className="relative">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <CheckCircle className="w-12 h-12 text-green-600" />
+                </div>
+                <div className="absolute inset-0 w-20 h-20 bg-green-200 rounded-full mx-auto animate-ping opacity-20"></div>
+              </div>
+              
+              {/* Success Message */}
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-green-600">CV Generated Successfully!</h3>
+                <p className="text-gray-600 text-lg">
+                  Your professional CV is ready for download
+                </p>
+              </div>
+              
+              {/* Download Button */}
+              <div className="pt-4">
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  {isDownloading ? (
+                    <>
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                      <span className="text-lg font-semibold">Downloading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-6 h-6 mr-3" />
+                      <span className="text-lg font-semibold">Download PDF</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              {/* Additional Info */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-center gap-2 text-green-700">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm">
+                    Your CV will be available for download for 30 minutes
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Error State */
+            <div className="space-y-6">
+              {/* Error Icon */}
+              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <XCircle className="w-12 h-12 text-red-600" />
+              </div>
+              
+              {/* Error Message */}
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-red-600">Generation Failed</h3>
+                <p className="text-gray-600 text-lg">
+                  {completionMessage}
+                </p>
+              </div>
+              
+              {/* Retry Button */}
+              <div className="pt-4">
+                <button
+                  onClick={() => {
+                    setShowCompletionModal(false);
+                    // You can add retry logic here
+                  }}
+                  className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <RefreshCw className="w-5 h-5 mr-2" />
+                  Try Again
+                </button>
+              </div>
             </div>
           )}
           
-          <button
-            onClick={() => setShowCompletionModal(false)}
-            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Close
-          </button>
+          {/* Close Button */}
+          <div className="pt-6 border-t border-gray-200">
+            <button
+              onClick={() => setShowCompletionModal(false)}
+              className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Close
+            </button>
+          </div>
         </div>
+      </BaseModal>
+
+      {/* CV Details Modal */}
+      <BaseModal
+        isOpen={showCVDetails}
+        onClose={() => setShowCVDetails(false)}
+        title=""
+      >
+        {selectedCV && (
+          <div className="space-y-6">
+            {/* Header with Status */}
+            <div className="text-center">
+              <div className="mb-4">
+                {selectedCV.status === 'completed' ? (
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle className="w-10 h-10 text-green-600" />
+                  </div>
+                ) : selectedCV.status === 'generating' ? (
+                  <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+                    <Clock className="w-10 h-10 text-yellow-600" />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                    <XCircle className="w-10 h-10 text-red-600" />
+                  </div>
+                )}
+              </div>
+              
+              <h3 className="text-xl font-bold text-color mb-2">CV Details</h3>
+              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedCV.status)}`}>
+                <span>{getStatusIcon(selectedCV.status)}</span>
+                {selectedCV.status.charAt(0).toUpperCase() + selectedCV.status.slice(1)}
+              </div>
+            </div>
+
+            {/* File Information Card */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-blue-600 block mb-1">Filename</span>
+                    <p className="text-color font-mono text-sm bg-white rounded px-2 py-1">{selectedCV.filename || 'CV Document'}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-blue-600 block mb-1">File Size</span>
+                    <p className="text-color">{selectedCV.fileSize ? `${Math.round(selectedCV.fileSize / 1024)} KB` : 'Unknown'}</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-blue-600 block mb-1">Downloads</span>
+                    <p className="text-color flex items-center gap-1">
+                      <Download className="w-4 h-4" />
+                      {selectedCV.downloadCount || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-blue-600 block mb-1">Created</span>
+                    <p className="text-color">{new Date(selectedCV.createdAt).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Created</label>
+                <p className="text-color">{new Date(selectedCV.createdAt).toLocaleString()}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Last Updated</label>
+                <p className="text-color">{new Date(selectedCV.updatedAt).toLocaleString()}</p>
+              </div>
+              {selectedCV.lastDownloadedAt && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Last Downloaded</label>
+                  <p className="text-color">{new Date(selectedCV.lastDownloadedAt).toLocaleString()}</p>
+                </div>
+              )}
+              {selectedCV.expiresAt && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Expires</label>
+                  <p className="text-color">{new Date(selectedCV.expiresAt).toLocaleString()}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Time Remaining */}
+            {selectedCV.minutesRemaining !== undefined && (
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-amber-800 font-medium">Time Remaining</p>
+                    <p className="text-amber-700 text-sm">{formatTimeRemaining(selectedCV.minutesRemaining)}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {selectedCV.errorMessage && (
+              <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <XCircle className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-red-800 font-medium mb-1">Error Details</h4>
+                    <p className="text-red-700 text-sm">{selectedCV.errorMessage}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowCVDetails(false)}
+                className="px-6 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+              
+              {canDownloadCV(selectedCV.status, selectedCV.isExpired) && (
+                <button
+                  onClick={() => {
+                    handleDownloadCV(selectedCV);
+                    setShowCVDetails(false);
+                  }}
+                  className="flex items-center gap-2 px-6 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <Download className="w-4 h-4" />
+                  Download CV
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </BaseModal>
     </div>
   );

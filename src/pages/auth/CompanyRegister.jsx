@@ -123,11 +123,13 @@ export default function CompanyRegister() {
               value={form.email}
               onChange={setForm}
             />
-            <Input
+            <TextareaWithCounter
               label="Company Description"
               name="description"
               value={form.description}
               onChange={setForm}
+              maxLength={200}
+              placeholder="Briefly describe your company, its mission, and what makes it unique..."
             />
           </>
         );
@@ -312,6 +314,44 @@ function Input({ label, name, value, onChange, type = "text" }) {
         onChange={(e) => onChange((prev) => ({ ...prev, [name]: e.target.value }))}
         className="w-full border border-gray bg-color-1 text-text px-4 py-2 rounded focus:outline-primary"
       />
+    </div>
+  );
+}
+
+function TextareaWithCounter({ label, name, value, onChange, maxLength, placeholder }) {
+  const remainingChars = maxLength - value.length;
+  const isNearLimit = remainingChars < 50;
+  const isAtLimit = remainingChars <= 0;
+  
+  return (
+    <div className="text-color">
+      <label className="block mb-1 font-medium">{label}</label>
+      <div className="relative">
+        <textarea
+          value={value}
+          onChange={(e) => {
+            if (e.target.value.length <= maxLength) {
+              onChange((prev) => ({ ...prev, [name]: e.target.value }));
+            }
+          }}
+          placeholder={placeholder}
+          className={`w-full border border-gray bg-color-1 text-text px-4 py-2 rounded focus:outline-primary resize-none transition-colors ${
+            isAtLimit ? 'border-red-300 bg-red-50' : 
+            isNearLimit ? 'border-yellow-300 bg-yellow-50' : ''
+          }`}
+          rows={4}
+        />
+        <div className={`absolute bottom-2 right-2 text-xs px-2 py-1 rounded ${
+          isAtLimit ? 'bg-red-100 text-red-600' :
+          isNearLimit ? 'bg-yellow-100 text-yellow-600' :
+          'bg-gray-100 text-gray-500'
+        }`}>
+          {remainingChars} characters left
+        </div>
+      </div>
+      {isAtLimit && (
+        <p className="text-red-500 text-xs mt-1">Character limit reached</p>
+      )}
     </div>
   );
 }

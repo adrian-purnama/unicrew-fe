@@ -10,7 +10,7 @@ export default function Tools() {
       description: 'Create your professional CV with AI assistance and dynamic PDF generation',
       icon: FileText,
       color: 'bg-blue-500',
-      href: '/cv-maker',
+      href: '/tools/cvmaker',
       features: ['AI-enhanced descriptions', 'ATS-friendly templates', 'PDF download']
     },
   ];

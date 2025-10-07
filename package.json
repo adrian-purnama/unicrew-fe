@@ -31,6 +31,7 @@
     "react-select": "^5.10.2",
     "react-swipeable": "^7.0.2",
     "reconnecting-websocket": "^4.4.0",
+    "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.10"
   },
   "devDependencies": {

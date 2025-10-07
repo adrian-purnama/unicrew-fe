@@ -27,7 +27,6 @@ import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
 import Navigation from "./component/Navigation";
 import Footer from "./component/Footer";
 import AdminResetPasswordPage from "./pages/admin/AdminResetPasswordPage";
-import AdminJobsPage from "./pages/admin/AdminJobsPage";
 import CVMakerPage from "./pages/CVMakerPage";
 
 function App() {
@@ -169,8 +168,8 @@ console.log(err)
           <Route path="/admin/entry" element={<AdminDataEntryPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/companies" element={<AdminCompaniesPage />} />
-          <Route path="/admin/reviews" element={<AdminReviewsPage />} />
-          <Route path="/admin/jobs" element={<AdminJobsPage />} />
+          <Route path="/admin/reviews" element={<AdminReviewsPage id
+          Page />} />
           <Route path="/admin/resetpassword" element={<AdminResetPasswordPage />} />
           {/* user */}
           <Route path="/user" element={<UserHomePage />} />
@@ -181,8 +180,9 @@ console.log(err)
           <Route path="/company/profile" element={<CompanyProfilePage />} />
           <Route path="/company/job/:jobId" element={<CompanyJobDetailPage />} />
 
-          {/* CV Maker */}
-          <Route path="/cv-maker" element={<CVMakerPage />} />
+
+          {/* tools */}
+          <Route path="/tools/cvmaker" element={<CVMakerPage />} />
         </Routes>
         <Footer />
       </div>
