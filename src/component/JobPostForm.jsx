@@ -2,6 +2,8 @@ import { useState } from "react";
 import SkillSelector from "./SkillSelector";
 import axiosInstance from "../../utils/ApiHelper";
 import LocationSelector from "./LocationSelector";
+import Select from "react-select";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function JobPostForm({ onSuccess }) {
   const [step, setStep] = useState(1);
@@ -14,6 +16,65 @@ export default function JobPostForm({ onSuccess }) {
     maxSalary: "",
     additionalInfoSections: [{ header: "", info: "" }],
   });
+
+  // Work type options for custom dropdown
+  const workTypeOptions = [
+    { value: "onsite", label: "🏢 Onsite" },
+    { value: "remote", label: "🏠 Remote" },
+    { value: "hybrid", label: "🔄 Hybrid" },
+  ];
+
+  // Validation functions
+  const validateStep1 = () => {
+    const errors = [];
+    
+    if (!form.title.trim()) {
+      errors.push("Job title is required");
+    }
+    
+    if (!form.workType) {
+      errors.push("Work type is required");
+    }
+    
+    if (form.workType !== "remote") {
+      if (!form.location.provinsi) {
+        errors.push("Provinsi is required for onsite/hybrid jobs");
+      }
+      if (!form.location.kabupaten) {
+        errors.push("Kabupaten is required for onsite/hybrid jobs");
+      }
+      if (!form.location.kecamatan) {
+        errors.push("Kecamatan is required for onsite/hybrid jobs");
+      }
+    }
+    
+    return errors;
+  };
+
+  const validateStep2 = () => {
+    const errors = [];
+    
+    if (!form.skills || form.skills.length === 0) {
+      errors.push("At least one skill is required");
+    }
+    
+    // Validate salary range if both are provided
+    if (form.minSalary && form.maxSalary && form.minSalary > form.maxSalary) {
+      errors.push("Minimum salary cannot be greater than maximum salary");
+    }
+    
+    return errors;
+  };
+
+  const validateForm = () => {
+    const step1Errors = validateStep1();
+    const step2Errors = validateStep2();
+    
+    return {
+      isValid: step1Errors.length === 0 && step2Errors.length === 0,
+      errors: [...step1Errors, ...step2Errors]
+    };
+  };
 
 
   const formatID = (n) =>
@@ -76,14 +137,23 @@ export default function JobPostForm({ onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate entire form before submission
+    const validation = validateForm();
+    if (!validation.isValid) {
+      validation.errors.forEach(error => toast.error(error));
+      return;
+    }
+
     const compiledInfo = form.additionalInfoSections
       .filter((sec) => sec.header || sec.info)
       .map((sec) => `${sec.header}\n${sec.info}`)
       .join("\n\n");
 
+    // Description is now optional - only include if there's content
+    const description = compiledInfo.trim() || undefined;
+
     const payload = {
       title: form.title,
-      description: compiledInfo,
       workType: form.workType,
       location: form.workType !== "remote" ? form.location : undefined,
       requiredSkills: form.skills.map((s) => s.value),
@@ -91,12 +161,25 @@ export default function JobPostForm({ onSuccess }) {
       salaryMax: form.maxSalary,
     };
 
-    await axiosInstance.post("/job/job", payload);
-    onSuccess();
+    // Only add description to payload if it exists
+    if (description) {
+      payload.description = description;
+    }
+
+    try {
+      await axiosInstance.post("/job/job", payload);
+      toast.success("Job posted successfully!");
+      onSuccess();
+    } catch (error) {
+      console.error("Error creating job:", error);
+      toast.error(error.response?.data?.message || "Failed to post job. Please try again.");
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div>
+      <Toaster position="top-center" />
+      <form onSubmit={handleSubmit} className="space-y-6">
       {/* Step indicators */}
       <div className="flex items-center justify-between mb-6">
         {[1, 2, 3].map((s, index) => (
@@ -148,16 +231,34 @@ export default function JobPostForm({ onSuccess }) {
 
           <div>
             <label className="font-semibold block text-color mb-2">Work Type *</label>
-            <select
-              name="workType"
-              value={form.workType}
-              onChange={handleChange}
-              className="w-full border border-gray p-3 rounded-lg text-color bg-color-2 focus:outline-primary transition-all"
-            >
-              <option value="onsite">🏢 Onsite</option>
-              <option value="remote">🏠 Remote</option>
-              <option value="hybrid">🔄 Hybrid</option>
-            </select>
+            <Select
+              options={workTypeOptions}
+              value={workTypeOptions.find(option => option.value === form.workType)}
+              onChange={(selectedOption) => {
+                setForm((prev) => ({ ...prev, workType: selectedOption.value }));
+              }}
+              placeholder="Select work type..."
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  backgroundColor: "var(--tw-bg-color-2, #f9fafb)",
+                  borderColor: "#d1d5db",
+                  borderRadius: "0.5rem",
+                  padding: "0.25rem 0.5rem",
+                  minHeight: "48px",
+                  boxShadow: "none",
+                  "&:hover": {
+                    borderColor: "#4f46e5",
+                  },
+                }),
+                menu: (base) => ({
+                  ...base,
+                  zIndex: 999,
+                }),
+              }}
+            />
           </div>
 
           {form.workType !== "remote" && (
@@ -226,8 +327,8 @@ export default function JobPostForm({ onSuccess }) {
       {step === 3 && (
         <div className="space-y-4">
           <div>
-            <h3 className="font-semibold text-color mb-3">Job Description & Requirements</h3>
-            <p className="text-sm text-gray-500 mb-4">Add detailed information about the job, requirements, and benefits</p>
+            <h3 className="font-semibold text-color mb-3">Job Description & Requirements (Optional)</h3>
+            <p className="text-sm text-gray-500 mb-4">Add detailed information about the job, requirements, and benefits. This section is optional.</p>
             
             {form.additionalInfoSections.map((section, idx) => (
               <div key={idx} className="space-y-3 border border-gray p-4 rounded-lg bg-color-2 mb-4 relative">
@@ -302,7 +403,23 @@ export default function JobPostForm({ onSuccess }) {
         {step < 3 ? (
           <button
             type="button"
-            onClick={() => setStep((s) => s + 1)}
+            onClick={() => {
+              // Validate current step before proceeding
+              if (step === 1) {
+                const errors = validateStep1();
+                if (errors.length > 0) {
+                  errors.forEach(error => toast.error(error));
+                  return;
+                }
+              } else if (step === 2) {
+                const errors = validateStep2();
+                if (errors.length > 0) {
+                  errors.forEach(error => toast.error(error));
+                  return;
+                }
+              }
+              setStep((s) => s + 1);
+            }}
             className="btn-primary px-4 py-2 rounded-lg transition-all font-medium"
           >
             Next →
@@ -318,5 +435,6 @@ export default function JobPostForm({ onSuccess }) {
         )}
       </div>
     </form>
+    </div>
   );
 }
