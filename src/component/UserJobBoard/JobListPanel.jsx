@@ -259,10 +259,21 @@ export default function JobListPanel({
                                 </div>
                             )}
 
-                            <p className="text-sm text-gray line-clamp-2">
-                                {job.description?.substring(0, 120)}
-                                {job.description?.length > 120 && "..."}
-                            </p>
+                            {job.descriptions && job.descriptions.length > 0 && (
+                                <div className="text-sm text-gray">
+                                    {job.descriptions.slice(0, 1).map((description, index) => (
+                                        <div key={index}>
+                                            <h4 className="font-semibold text-color mb-1 line-clamp-1">{description.title}</h4>
+                                            <p className="line-clamp-2 text-gray-600">{description.content}</p>
+                                        </div>
+                                    ))}
+                                    {job.descriptions.length > 1 && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            +{job.descriptions.length - 1} more description{job.descriptions.length - 1 !== 1 ? 's' : ''}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
 
                             {job.hasApplied && (
                                 <div className="mt-2">

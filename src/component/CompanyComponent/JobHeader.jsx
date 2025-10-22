@@ -33,7 +33,16 @@ export default function JobHeader({ job, onBack }) {
           </button>
         )}
       </div>
-      <p className="text-color mb-4 leading-relaxed">{job.description}</p>
+      {job.descriptions && job.descriptions.length > 0 && (
+        <div className="mb-4">
+          {job.descriptions.map((description, index) => (
+            <div key={index} className="mb-6">
+              <h3 className="text-lg font-semibold text-color mb-2">{description.title}</h3>
+              <p className="text-color leading-relaxed whitespace-pre-wrap">{description.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {job.requiredSkills?.length > 0 && (
         <div>

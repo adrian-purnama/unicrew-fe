@@ -180,10 +180,14 @@ export default function JobDetailPanel({ job, onApply, onSave, onUnsave }) {
                 </div>
             )}
 
-            {job.description && (
+            {job.descriptions && job.descriptions.length > 0 && (
                 <div className="mb-4">
-                    <strong className="text-color">Description:</strong>
-                    <p className = "text-color">{job.description}</p>
+                    {job.descriptions.map((description, index) => (
+                        <div key={index} className="mb-6">
+                            <h3 className="text-lg font-semibold text-color mb-2">{description.title}</h3>
+                            <p className="text-color leading-relaxed whitespace-pre-wrap">{description.content}</p>
+                        </div>
+                    ))}
                 </div>
             )}
 

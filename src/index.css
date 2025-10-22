@@ -21,24 +21,46 @@
 
 /* Forced DARK (overrides device) */
 html.dark {
+  --color-primary: 119, 195, 229;
+  --color-primary-highlight: 68, 95, 227;
+
+  --color-bg-1: 255, 255, 255;
+  --color-bg-2: 243, 244, 246;
+  --color-text: 40, 40, 40;
+  --color-gray-text: 100, 100, 100;
+  --color-gray-border: 200, 200, 200;
+  --color-theme-highlight: 230, 230, 250;
+}
+/* html.dark {
   --color-bg-1: 30, 41, 57;
   --color-bg-2: 16, 24, 40;
   --color-text: 255, 255, 255;
   --color-gray-text: 180, 180, 180;
   --color-gray-border: 80, 80, 80;
   --color-theme-highlight: 38, 50, 56;
-}
+} */
 
 /* Optional: follow OS only when you opt in with .theme-system */
 @media (prefers-color-scheme: dark) {
   html.theme-system {
+    --color-primary: 119, 195, 229;
+    --color-primary-highlight: 68, 95, 227;
+  
+    --color-bg-1: 255, 255, 255;
+    --color-bg-2: 243, 244, 246;
+    --color-text: 40, 40, 40;
+    --color-gray-text: 100, 100, 100;
+    --color-gray-border: 200, 200, 200;
+    --color-theme-highlight: 230, 230, 250;
+  }
+  /* html.theme-system {
     --color-bg-1: 30, 41, 57;
     --color-bg-2: 16, 24, 40;
     --color-text: 255, 255, 255;
     --color-gray-text: 180, 180, 180;
     --color-gray-border: 80, 80, 80;
     --color-theme-highlight: 38, 50, 56;
-  }
+  } */
 }
 
 /* Use your tokens with utilities */

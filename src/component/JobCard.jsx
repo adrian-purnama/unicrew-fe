@@ -4,7 +4,7 @@ import axiosInstance from "../../utils/ApiHelper";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-export default function JobCard({ job, mode, onDelete, onToggleStatus, notificationCount = 0 }) {
+export default function JobCard({ job, mode, onDelete, onToggleStatus, onEdit, notificationCount = 0 }) {
     const [isActive, setIsActive] = useState(job.isActive);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -71,10 +71,20 @@ export default function JobCard({ job, mode, onDelete, onToggleStatus, notificat
                 </p>
             )}
 
-            {job.description && (
-                <p className="text-sm mt-2 text-gray line-clamp-3">
-                    {job.description}
-                </p>
+            {job.descriptions && job.descriptions.length > 0 && (
+                <div className="text-sm mt-2 text-gray">
+                    {job.descriptions.slice(0, 1).map((description, index) => (
+                        <div key={index} className="mb-2">
+                            <h4 className="font-semibold text-color mb-1 line-clamp-1">{description.title}</h4>
+                            <p className="line-clamp-3 text-gray-600">{description.content}</p>
+                        </div>
+                    ))}
+                    {job.descriptions.length > 1 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            +{job.descriptions.length - 1} more description{job.descriptions.length - 1 !== 1 ? 's' : ''}
+                        </p>
+                    )}
+                </div>
             )}
 
             {mode === "company" && job.statusCounts && (
@@ -115,6 +125,15 @@ export default function JobCard({ job, mode, onDelete, onToggleStatus, notificat
                     {isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     {isActive ? "Disable" : "Enable"}
                 </button>
+
+                {onEdit && (
+                    <button
+                        onClick={() => onEdit(job)}
+                        className="text-sm px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 flex items-center gap-1"
+                    >
+                        ✏️ Edit
+                    </button>
+                )}
 
                 <button
                     onClick={() => onDelete?.(job._id)}

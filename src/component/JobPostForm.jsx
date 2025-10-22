@@ -14,7 +14,7 @@ export default function JobPostForm({ onSuccess }) {
     skills: [],
     minSalary: "",
     maxSalary: "",
-    additionalInfoSections: [{ header: "", info: "" }],
+    descriptions: [{ title: "", content: "" }],
   });
 
   // Work type options for custom dropdown
@@ -66,13 +66,34 @@ export default function JobPostForm({ onSuccess }) {
     return errors;
   };
 
+  const validateStep3 = () => {
+    const errors = [];
+    
+    if (!form.descriptions || form.descriptions.length === 0) {
+      errors.push("At least one description section is required");
+      return errors;
+    }
+    
+    form.descriptions.forEach((desc, index) => {
+      if (!desc.title.trim()) {
+        errors.push(`Description ${index + 1} title is required`);
+      }
+      if (!desc.content.trim()) {
+        errors.push(`Description ${index + 1} content is required`);
+      }
+    });
+    
+    return errors;
+  };
+
   const validateForm = () => {
     const step1Errors = validateStep1();
     const step2Errors = validateStep2();
+    const step3Errors = validateStep3();
     
     return {
-      isValid: step1Errors.length === 0 && step2Errors.length === 0,
-      errors: [...step1Errors, ...step2Errors]
+      isValid: step1Errors.length === 0 && step2Errors.length === 0 && step3Errors.length === 0,
+      errors: [...step1Errors, ...step2Errors, ...step3Errors]
     };
   };
 
@@ -110,28 +131,24 @@ export default function JobPostForm({ onSuccess }) {
     }
   };
 
-  const handleAddSection = () => {
+  // Helper functions for managing descriptions
+  const handleDescriptionChange = (index, field, value) => {
+    const updated = [...form.descriptions];
+    updated[index][field] = value;
+    setForm((prev) => ({ ...prev, descriptions: updated }));
+  };
+
+  const handleAddDescription = () => {
     setForm((prev) => ({
       ...prev,
-      additionalInfoSections: [
-        ...prev.additionalInfoSections,
-        { header: "", info: "" },
-      ],
+      descriptions: [...prev.descriptions, { title: "", content: "" }],
     }));
   };
 
-  const handleRemoveSection = (index) => {
-    setForm((prev) => {
-      if (prev.additionalInfoSections.length === 1) return prev; // keep at least one
-      const updated = prev.additionalInfoSections.filter((_, i) => i !== index);
-      return { ...prev, additionalInfoSections: updated };
-    });
-  };
-
-  const handleSectionChange = (index, key, value) => {
-    const updated = [...form.additionalInfoSections];
-    updated[index][key] = value;
-    setForm((prev) => ({ ...prev, additionalInfoSections: updated }));
+  const handleRemoveDescription = (index) => {
+    if (form.descriptions.length === 1) return; // Keep at least one
+    const updated = form.descriptions.filter((_, i) => i !== index);
+    setForm((prev) => ({ ...prev, descriptions: updated }));
   };
 
   const handleSubmit = async (e) => {
@@ -144,14 +161,6 @@ export default function JobPostForm({ onSuccess }) {
       return;
     }
 
-    const compiledInfo = form.additionalInfoSections
-      .filter((sec) => sec.header || sec.info)
-      .map((sec) => `${sec.header}\n${sec.info}`)
-      .join("\n\n");
-
-    // Description is now optional - only include if there's content
-    const description = compiledInfo.trim() || undefined;
-
     const payload = {
       title: form.title,
       workType: form.workType,
@@ -159,12 +168,8 @@ export default function JobPostForm({ onSuccess }) {
       requiredSkills: form.skills.map((s) => s.value),
       salaryMin: form.minSalary,
       salaryMax: form.maxSalary,
+      descriptions: form.descriptions,
     };
-
-    // Only add description to payload if it exists
-    if (description) {
-      payload.description = description;
-    }
 
     try {
       await axiosInstance.post("/job/job", payload);
@@ -325,63 +330,66 @@ export default function JobPostForm({ onSuccess }) {
 
       {/* Step 3: Additional Info */}
       {step === 3 && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
-            <h3 className="font-semibold text-color mb-3">Job Description & Requirements (Optional)</h3>
-            <p className="text-sm text-gray-500 mb-4">Add detailed information about the job, requirements, and benefits. This section is optional.</p>
+            <h3 className="font-semibold text-color mb-3">Job Descriptions</h3>
+            <p className="text-sm text-gray-500 mb-4">Add multiple description sections to provide comprehensive information about the job.</p>
             
-            {form.additionalInfoSections.map((section, idx) => (
-              <div key={idx} className="space-y-3 border border-gray p-4 rounded-lg bg-color-2 mb-4 relative">
-                <div className="flex gap-3 items-start">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={section.header}
-                      onChange={(e) =>
-                        handleSectionChange(idx, "header", e.target.value)
-                      }
-                      placeholder="e.g., Job Description, Requirements, Benefits"
-                      className="w-full border border-gray p-3 rounded-lg font-semibold text-color bg-color-1 focus:outline-primary transition-all"
-                    />
+            <div className="space-y-6">
+              {form.descriptions.map((description, index) => (
+                <div key={index} className="border border-gray p-4 rounded-lg bg-color-2 relative">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-medium text-color">Description Section {index + 1}</h4>
+                    {form.descriptions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDescription(index)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      >
+                        Remove Section
+                      </button>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSection(idx)}
-                    disabled={form.additionalInfoSections.length === 1}
-                    className={`px-3 py-2 rounded-lg border transition-all ${form.additionalInfoSections.length === 1
-                        ? "opacity-50 cursor-not-allowed bg-gray-100 text-gray-400"
-                        : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-                      }`}
-                    aria-label={`Delete section ${idx + 1}`}
-                    title={
-                      form.additionalInfoSections.length === 1
-                        ? "You must have at least one section"
-                        : "Delete this section"
-                    }
-                  >
-                    🗑️
-                  </button>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-color mb-2">
+                        Section Title *
+                      </label>
+                      <input
+                        type="text"
+                        value={description.title}
+                        onChange={(e) => handleDescriptionChange(index, "title", e.target.value)}
+                        placeholder="e.g., About This Role, Requirements, Benefits, Company Culture"
+                        className="w-full border border-gray p-3 rounded-lg text-color bg-color-1 focus:outline-primary transition-all"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-color mb-2">
+                        Section Content *
+                      </label>
+                      <textarea
+                        value={description.content}
+                        onChange={(e) => handleDescriptionChange(index, "content", e.target.value)}
+                        placeholder="Provide detailed information for this section..."
+                        className="w-full border border-gray p-3 rounded-lg text-color bg-color-1 focus:outline-primary transition-all resize-none"
+                        rows={6}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <textarea
-                  value={section.info}
-                  onChange={(e) =>
-                    handleSectionChange(idx, "info", e.target.value)
-                  }
-                  placeholder="Provide detailed information for this section..."
-                  className="w-full border border-gray p-3 rounded-lg text-color bg-color-1 focus:outline-primary transition-all resize-none"
-                  rows={4}
-                />
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleAddSection}
-              className="w-full border-2 border-dashed border-gray p-3 rounded-lg text-gray-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
-            >
-              <span className="text-xl">+</span>
-              Add Another Section
-            </button>
+              ))}
+              
+              <button
+                type="button"
+                onClick={handleAddDescription}
+                className="w-full border-2 border-dashed border-gray p-4 rounded-lg text-gray-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
+              >
+                <span className="text-xl">+</span>
+                Add Another Description Section
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -391,7 +399,11 @@ export default function JobPostForm({ onSuccess }) {
         {step > 1 ? (
           <button
             type="button"
-            onClick={() => setStep((s) => s - 1)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setStep((s) => s - 1);
+            }}
             className="px-4 py-2 border border-gray rounded-lg text-color hover:bg-color-1 transition-all font-medium"
           >
             ← Back
@@ -403,7 +415,9 @@ export default function JobPostForm({ onSuccess }) {
         {step < 3 ? (
           <button
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               // Validate current step before proceeding
               if (step === 1) {
                 const errors = validateStep1();
@@ -413,6 +427,12 @@ export default function JobPostForm({ onSuccess }) {
                 }
               } else if (step === 2) {
                 const errors = validateStep2();
+                if (errors.length > 0) {
+                  errors.forEach(error => toast.error(error));
+                  return;
+                }
+              } else if (step === 3) {
+                const errors = validateStep3();
                 if (errors.length > 0) {
                   errors.forEach(error => toast.error(error));
                   return;

@@ -3,6 +3,7 @@ import Navigation from "../../component/Navigation";
 import BaseModal from "../../component/BaseModal";
 import JobPostForm from "../../component/JobPostForm";
 import JobCard from "../../component/JobCard";
+import EditDescriptionsModal from "../../component/EditDescriptionsModal";
 import axiosInstance from "../../../utils/ApiHelper";
 import toast from "react-hot-toast";
 
@@ -10,6 +11,8 @@ export default function CompanyHomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jobPosts, setJobPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showEditDescriptionsModal, setShowEditDescriptionsModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
   const [stats, setStats] = useState({
     totalJobs: 0,
     activeJobs: 0,
@@ -67,6 +70,17 @@ export default function CompanyHomePage() {
     toast.success("Job posted successfully!");
   };
 
+  const handleEditDescriptions = (job) => {
+    setSelectedJob(job);
+    setShowEditDescriptionsModal(true);
+  };
+
+  const handleEditDescriptionsSuccess = () => {
+    setShowEditDescriptionsModal(false);
+    setSelectedJob(null);
+    fetchJobs();
+  };
+
   const handleDelete = (id) => {
     setJobPosts((prev) => prev.filter((job) => job._id !== id));
     setStats(prev => ({
@@ -85,7 +99,10 @@ export default function CompanyHomePage() {
   const filteredAndSortedJobs = jobPosts
     .filter(job => {
       const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           job.description.toLowerCase().includes(searchTerm.toLowerCase());
+                           (job.descriptions && job.descriptions.some(desc => 
+                             desc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             desc.content?.toLowerCase().includes(searchTerm.toLowerCase())
+                           ));
       const matchesFilter = filterStatus === "all" || job.status === filterStatus;
       return matchesSearch && matchesFilter;
     })
@@ -340,6 +357,7 @@ export default function CompanyHomePage() {
                       mode="company"
                       onDelete={handleDelete}
                       onStatusChange={handleStatusChange}
+                      onEdit={handleEditDescriptions}
                     />
                   </div>
                 ))}
@@ -357,6 +375,17 @@ export default function CompanyHomePage() {
       >
         <JobPostForm onSuccess={handlePostSuccess} />
       </BaseModal>
+
+      {/* Edit Descriptions Modal */}
+      <EditDescriptionsModal
+        job={selectedJob}
+        isOpen={showEditDescriptionsModal}
+        onClose={() => {
+          setShowEditDescriptionsModal(false);
+          setSelectedJob(null);
+        }}
+        onSuccess={handleEditDescriptionsSuccess}
+      />
     </div>
   );
 }

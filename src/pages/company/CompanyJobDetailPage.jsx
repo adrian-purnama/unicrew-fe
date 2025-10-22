@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../../../utils/ApiHelper";
 import ChatModal from "../../component/ChatModal";
 import BaseModal from "../../component/BaseModal";
+import EditDescriptionsModal from "../../component/EditDescriptionsModal";
 import toast from "react-hot-toast";
 
 export default function CompanyJobDetailPage() {
@@ -21,6 +22,7 @@ export default function CompanyJobDetailPage() {
   const [endTarget, setEndTarget] = useState(null);
   const [ending, setEnding] = useState(false);
   const [expandedAbout, setExpandedAbout] = useState({}); // userId:boolean
+  const [showEditDescriptionsModal, setShowEditDescriptionsModal] = useState(false);
 
   const endApplication = async () => {
     if (!endTarget?._id) return;
@@ -667,15 +669,32 @@ export default function CompanyJobDetailPage() {
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => navigate(-1)}
-                className="bg-color-1 hover:bg-primary-20 text-color border border-gray hover:border-primary px-4 py-2 rounded-lg transition-all duration-200"
-              >
-                ← Back
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowEditDescriptionsModal(true)}
+                  className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2"
+                >
+                  ✏️ Edit Descriptions
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="bg-color-1 hover:bg-primary-20 text-color border border-gray hover:border-primary px-4 py-2 rounded-lg transition-all duration-200"
+                >
+                  ← Back
+                </button>
+              </div>
             </div>
 
-            <p className="text-color mb-4 leading-relaxed">{job.description}</p>
+            {job.descriptions && job.descriptions.length > 0 && (
+              <div className="mb-4">
+                {job.descriptions.map((description, index) => (
+                  <div key={index} className="mb-6">
+                    <h3 className="text-lg font-semibold text-color mb-2">{description.title}</h3>
+                    <p className="text-color leading-relaxed whitespace-pre-wrap">{description.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {job.requiredSkills?.length > 0 && (
               <div>
@@ -827,6 +846,18 @@ export default function CompanyJobDetailPage() {
             </div>
           </BaseModal>
         )}
+
+        {/* Edit Descriptions Modal */}
+        <EditDescriptionsModal
+          job={job}
+          isOpen={showEditDescriptionsModal}
+          onClose={() => setShowEditDescriptionsModal(false)}
+          onSuccess={() => {
+            // Refresh job data after successful edit
+            fetchJobDetails();
+            toast.success("Job descriptions updated successfully!");
+          }}
+        />
       </div>
     </div>
   );
