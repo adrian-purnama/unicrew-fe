@@ -137,7 +137,7 @@ export default function Navigation() {
           <div className="flex items-center space-x-2 sm:space-x-3">
 
             {/* Theme Toggle */}
-            <button
+            {/* <button
               type="button"
               onClick={cycleTheme}
               title={`Theme: ${
@@ -151,7 +151,7 @@ export default function Navigation() {
                   Sys
                 </span>
               )}
-            </button>
+            </button> */}
 
             {/* Notifications */}
             <Popover className="relative">
@@ -226,7 +226,7 @@ export default function Navigation() {
           <div className="flex items-center gap-2 sm:gap-3 text-sm">
 
             {/* Theme Toggle (guest) */}
-            <button
+            {/* <button
               type="button"
               onClick={cycleTheme}
               title={`Theme: ${
@@ -240,7 +240,7 @@ export default function Navigation() {
                   Sys
                 </span>
               )}
-            </button>
+            </button> */}
 
             <Link
               to="/auth/company/login"
