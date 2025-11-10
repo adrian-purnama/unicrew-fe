@@ -1,4 +1,4 @@
-import Navigation from '../../component/Navigation';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -7,11 +7,12 @@ import {
   Database,
   ChevronRight,
   ShieldCheck,
-  Wrench,
   EyeClosed,
   Briefcase,
+  Download,
 } from 'lucide-react';
-import Footer from '../../component/Footer';
+import toast from 'react-hot-toast';
+import axiosInstance from '../../../utils/ApiHelper';
 
 function CardLink({ to, title, subtitle, Icon }) {
   return (
@@ -62,6 +63,106 @@ function CardLink({ to, title, subtitle, Icon }) {
 }
 
 export default function AdminHomePage() {
+  const [downloadingDump, setDownloadingDump] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
+  const [collectionsError, setCollectionsError] = useState(null);
+  const [selectedCollection, setSelectedCollection] = useState('');
+  const [downloadingCollection, setDownloadingCollection] = useState(false);
+
+  const handleDownloadDump = async () => {
+    try {
+      setDownloadingDump(true);
+      const response = await axiosInstance.get('/admin/db/dump', {
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], {
+        type: 'application/gzip',
+      });
+      const url = window.URL.createObjectURL(blob);
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `unicru-dump-${timestamp}.gz`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success('MongoDB dump download started');
+    } catch (error) {
+      console.error('Failed to download MongoDB dump', error);
+      toast.error(
+        error.response?.data?.message ||
+          'Failed to download dump. Please try again.'
+      );
+    } finally {
+      setDownloadingDump(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        setCollectionsLoading(true);
+        const { data } = await axiosInstance.get('/admin/db/collections');
+        const names = data?.collections || [];
+        setCollections(names);
+        setSelectedCollection(names[0] || '');
+        setCollectionsError(null);
+      } catch (error) {
+        console.error('Failed to load collections', error);
+        setCollectionsError(
+          error.response?.data?.message ||
+            'Unable to load collections. Please try again later.'
+        );
+        toast.error('Failed to load collections list.');
+      } finally {
+        setCollectionsLoading(false);
+      }
+    };
+
+    fetchCollections();
+  }, []);
+
+  const handleDownloadCollection = async () => {
+    if (!selectedCollection) {
+      toast.error('Select a collection before downloading.');
+      return;
+    }
+
+    try {
+      setDownloadingCollection(true);
+      const response = await axiosInstance.get('/admin/db/export', {
+        params: { collection: selectedCollection },
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `${selectedCollection}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success(
+        `Exported ${selectedCollection} as Extended JSON for MongoDB Compass`
+      );
+    } catch (error) {
+      console.error('Failed to download collection', error);
+      toast.error(
+        error.response?.data?.message ||
+          'Failed to export collection. Please try again.'
+      );
+    } finally {
+      setDownloadingCollection(false);
+    }
+  };
+
   return (
     <>
       <div className='bg-color-1'>
@@ -85,6 +186,74 @@ export default function AdminHomePage() {
             </div>
           </div>
         </header>
+
+        <section className="rounded-xl border border-gray bg-color-2 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-color">Database Tools</h2>
+              <p className="mt-1 text-sm text-gray">
+                Download a compressed MongoDB dump of the current database.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleDownloadDump}
+              disabled={downloadingDump}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download className="h-4 w-4" />
+              {downloadingDump ? 'Preparing...' : 'Download MongoDB Dump'}
+            </button>
+          </div>
+
+          <div className="mt-6 space-y-3 rounded-lg border border-dashed border-gray bg-color-1/60 p-4">
+            <div>
+              <h3 className="text-sm font-semibold text-color">
+                MongoDB Compass Export
+              </h3>
+              <p className="text-xs text-gray">
+                Export a single collection as Extended JSON and import it using
+                Compass&apos; &quot;Import Data&quot; feature.
+              </p>
+            </div>
+
+            {collectionsLoading ? (
+              <p className="text-sm text-gray">Loading collections…</p>
+            ) : collectionsError ? (
+              <p className="text-sm text-red-500">{collectionsError}</p>
+            ) : (
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                <label className="w-full sm:w-64">
+                  <span className="text-xs font-medium uppercase text-gray tracking-wide">
+                    Collection
+                  </span>
+                  <select
+                    value={selectedCollection}
+                    onChange={(e) => setSelectedCollection(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-gray bg-color-1 px-3 py-2 text-sm text-color focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    {collections.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadCollection}
+                  disabled={downloadingCollection || !selectedCollection}
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary-20 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Download className="h-4 w-4" />
+                  {downloadingCollection ? 'Exporting…' : 'Export JSON for Compass'}
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Primary sections */}
         <section>
