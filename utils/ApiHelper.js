@@ -5,8 +5,8 @@ import toast from "react-hot-toast";
 const axiosInstance = axios.create({
   //baseURL: 'https://unikru-be.nusagitra.web.id/',
   // baseURL: 'https://unnicrew-be.onrender.com',
-   //baseURL: "http://localhost:4001",
-   baseURL: "https://be-unikru.amfphub.com",
+   baseURL: "http://localhost:4000",
+  //  baseURL: "https://be-unikru.amfphub.com",
   paramsSerializer: (params) =>
     qs.stringify(params, {
       arrayFormat: "brackets",
